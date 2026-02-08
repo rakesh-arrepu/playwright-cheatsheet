@@ -1650,11 +1650,196 @@ export default function PlaywrightWarmCheatsheet() {
         }
 
         @media (max-width: 768px) {
-          .stat-row { grid-template-columns: repeat(2, 1fr); }
-          .setup-grid { grid-template-columns: 1fr; }
-          .masthead-title { font-size: 30px; }
-          .table-header, .table-row { grid-template-columns: 1fr 1fr; gap: 8px; font-size: 12px; }
-          .comp-row { grid-template-columns: 1fr; gap: 6px; }
+          /* Container and spacing */
+          .warm-container {
+            padding: 0 16px;
+          }
+
+          /* Header adjustments */
+          .editorial-header {
+            padding: 32px 16px 24px;
+          }
+
+          .masthead-title {
+            font-size: 28px;
+            line-height: 1.2;
+          }
+
+          .masthead-subtitle {
+            font-size: 16px;
+            margin-bottom: 12px;
+          }
+
+          .masthead-meta {
+            font-size: 10px;
+            letter-spacing: 1.5px;
+          }
+
+          /* Stats section */
+          .stat-row {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-bottom: 24px;
+          }
+
+          .stat-box {
+            padding: 16px 12px;
+          }
+
+          .stat-number {
+            font-size: 28px;
+          }
+
+          .stat-label {
+            font-size: 10px;
+            letter-spacing: 1px;
+          }
+
+          /* Setup section */
+          .setup-grid {
+            grid-template-columns: 1fr;
+            gap: 14px;
+            margin-bottom: 24px;
+          }
+
+          .setup-card {
+            padding: 18px;
+          }
+
+          .setup-title {
+            font-size: 15px;
+          }
+
+          .setup-code {
+            font-size: 11px;
+            padding: 8px 12px;
+            word-break: break-word;
+            overflow-x: auto;
+          }
+
+          .setup-desc {
+            font-size: 12px;
+          }
+
+          /* Section headings */
+          .section-heading {
+            font-size: 20px;
+            margin: 28px 0 6px;
+          }
+
+          .section-count {
+            font-size: 10px;
+            padding: 3px 8px;
+          }
+
+          /* Table improvements */
+          .table-header, .table-row {
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            font-size: 11px;
+            padding: 10px 8px;
+          }
+
+          .comp-row {
+            grid-template-columns: 1fr;
+            gap: 6px;
+            padding: 8px;
+          }
+
+          /* Category sections */
+          .category-divider {
+            margin: 24px 0;
+          }
+
+          /* Improve touch targets */
+          button,
+          a,
+          .clickable {
+            min-height: 44px;
+            min-width: 44px;
+          }
+
+          /* Workflow section mobile improvements */
+          .workflow-card {
+            margin-bottom: 14px;
+          }
+
+          .workflow-header {
+            padding: 16px;
+          }
+
+          .workflow-content {
+            padding: 16px;
+          }
+
+          .workflow-code-block {
+            padding: 16px;
+            border-radius: 12px;
+          }
+
+          .workflow-code-block pre {
+            font-size: 12px !important;
+            line-height: 1.6 !important;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+          }
+
+          .workflow-footer {
+            grid-template-columns: 1fr;
+            gap: 16px;
+          }
+
+          /* Improve text readability */
+          body {
+            -webkit-text-size-adjust: 100%;
+            -webkit-font-smoothing: antialiased;
+          }
+
+          /* Ensure content doesn't overflow */
+          * {
+            max-width: 100%;
+            word-wrap: break-word;
+          }
+
+          /* Code blocks scrollable on mobile */
+          pre,
+          code {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            white-space: pre;
+          }
+        }
+
+        /* Additional breakpoint for very small screens */
+        @media (max-width: 480px) {
+          .masthead-title {
+            font-size: 24px;
+          }
+
+          .stat-box {
+            padding: 14px 10px;
+          }
+
+          .stat-number {
+            font-size: 24px;
+          }
+
+          .stat-label {
+            font-size: 9px;
+          }
+
+          .workflow-tabs {
+            font-size: 11px;
+          }
+
+          .workflow-tab {
+            padding: 8px 10px;
+          }
+
+          .footer-bar {
+            padding: 16px 16px 24px;
+            font-size: 11px;
+          }
         }
       `}</style>
 
