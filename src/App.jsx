@@ -120,6 +120,343 @@ const categories = [
   },
 ];
 
+const workflows = [
+  {
+    id: "login-auth",
+    name: "Login Authentication Flow",
+    icon: "🔐",
+    description: "Complete end-to-end login test covering navigation, form interaction, and post-login verification",
+    difficulty: "beginner",
+    category: "authentication",
+    mcp: {
+      description: "MCP uses accessibility snapshots to understand page state, then chains browser_navigate → browser_type → browser_click → browser_snapshot for verification.",
+      code: `// Step 1: Navigate to login page
+browser_navigate({
+  url: "https://example.com/login"
+})
+
+// Step 2: Fill username (MCP auto-detects input fields from snapshot)
+browser_type({
+  text: "testuser@example.com",
+  description: "email input field"
+})
+
+// Step 3: Fill password
+browser_type({
+  text: "SecurePass123!",
+  description: "password input field"
+})
+
+// Step 4: Click login button
+browser_click({
+  description: "login submit button"
+})
+
+// Step 5: Verify successful login
+browser_snapshot()
+// AI agent verifies "Welcome" or dashboard elements in snapshot`
+    },
+    cli: {
+      description: "CLI uses snapshot references (ref IDs) for element targeting. Requires one initial snapshot, then direct interactions.",
+      code: `# Step 1: Open page and get initial snapshot
+playwright open https://example.com/login
+playwright snapshot
+
+# Step 2: Type in email field (use ref from snapshot, e.g., #12)
+playwright fill #12 "testuser@example.com"
+
+# Step 3: Type in password field (ref #13)
+playwright fill #13 "SecurePass123!"
+
+# Step 4: Click login button (ref #14)
+playwright click #14
+
+# Step 5: Wait and verify
+playwright snapshot
+# Check output for success indicators`
+    },
+    testRunner: {
+      description: "Test Runner provides full assertion library, automatic waiting, and retry logic. Most robust for CI/CD.",
+      code: `import { test, expect } from '@playwright/test';
+
+test('login authentication flow', async ({ page }) => {
+  // Step 1: Navigate to login page
+  await page.goto('https://example.com/login');
+
+  // Step 2: Fill email field
+  await page.fill('input[type="email"]', 'testuser@example.com');
+
+  // Step 3: Fill password field
+  await page.fill('input[type="password"]', 'SecurePass123!');
+
+  // Step 4: Click login button
+  await page.click('button[type="submit"]');
+
+  // Step 5: Assert successful login
+  await expect(page).toHaveURL(/.*dashboard/);
+  await expect(page.locator('.welcome-message')).toBeVisible();
+  await expect(page.locator('.user-avatar')).toContainText('testuser');
+});`
+    },
+    expectedResult: "User successfully logs in and lands on dashboard with welcome message visible",
+    proTip: "MCP excels when field labels change (uses AI understanding). CLI is fastest for stable UIs. Test Runner is most reliable for regression suites."
+  },
+  {
+    id: "form-validation",
+    name: "Form Validation Testing",
+    icon: "📝",
+    description: "Testing client-side form validation by intentionally triggering error states and verifying messages",
+    difficulty: "intermediate",
+    category: "forms",
+    mcp: {
+      description: "MCP can intelligently detect validation messages from accessibility tree without explicit selectors.",
+      code: `// Step 1: Navigate to form
+browser_navigate({
+  url: "https://example.com/signup"
+})
+
+// Step 2: Submit empty form to trigger validation
+browser_click({
+  description: "submit button"
+})
+
+// Step 3: Capture validation state
+browser_snapshot()
+// AI reads "Email is required" from accessibility tree
+
+// Step 4: Fill invalid email
+browser_type({
+  text: "not-an-email",
+  description: "email input"
+})
+
+browser_click({
+  description: "submit button"
+})
+
+// Step 5: Verify error message
+browser_snapshot()
+// AI confirms "Invalid email format" is present
+
+// Step 6: Fix validation and submit
+browser_type({
+  text: "valid@example.com",
+  description: "email input"
+})
+
+browser_type({
+  text: "StrongPass123!",
+  description: "password input"
+})
+
+browser_click({
+  description: "submit button"
+})
+
+// Step 7: Verify success
+browser_snapshot()
+// AI confirms no error messages, success state visible`
+    },
+    cli: {
+      description: "CLI requires explicit snapshot + ref workflow, but is very token-efficient for repeated validation checks.",
+      code: `# Step 1: Open signup form
+playwright open https://example.com/signup
+playwright snapshot
+
+# Step 2: Submit without filling (get submit button ref)
+playwright click #20
+playwright snapshot
+# Manually check output for "Email is required"
+
+# Step 3: Fill invalid email (get email field ref)
+playwright fill #18 "not-an-email"
+playwright click #20
+playwright snapshot
+# Check for "Invalid email format"
+
+# Step 4: Fix validation
+playwright fill #18 "valid@example.com"
+playwright fill #19 "StrongPass123!"
+
+# Step 5: Submit valid form
+playwright click #20
+playwright snapshot
+# Verify success message or redirect`
+    },
+    testRunner: {
+      description: "Test Runner provides explicit assertions for validation states, making tests self-documenting and reliable.",
+      code: `import { test, expect } from '@playwright/test';
+
+test('form validation flow', async ({ page }) => {
+  // Step 1: Navigate to form
+  await page.goto('https://example.com/signup');
+
+  // Step 2: Submit empty form
+  await page.click('button[type="submit"]');
+
+  // Step 3: Assert validation errors appear
+  await expect(page.locator('.error-email')).toHaveText('Email is required');
+  await expect(page.locator('.error-password')).toHaveText('Password is required');
+
+  // Step 4: Fill invalid email
+  await page.fill('input[name="email"]', 'not-an-email');
+  await page.click('button[type="submit"]');
+
+  // Step 5: Assert invalid format error
+  await expect(page.locator('.error-email')).toHaveText('Invalid email format');
+
+  // Step 6: Fix validation
+  await page.fill('input[name="email"]', 'valid@example.com');
+  await page.fill('input[name="password"]', 'StrongPass123!');
+
+  // Step 7: Submit valid form
+  await page.click('button[type="submit"]');
+
+  // Step 8: Assert success
+  await expect(page.locator('.success-message')).toBeVisible();
+  await expect(page).toHaveURL(/.*success/);
+});`
+    },
+    expectedResult: "Form correctly shows validation errors for invalid inputs, then successfully submits when all fields are valid",
+    proTip: "MCP is best for exploratory testing of validation logic. Test Runner provides explicit assertions that serve as living documentation."
+  },
+  {
+    id: "ecommerce-search",
+    name: "E-commerce Product Search",
+    icon: "🛒",
+    description: "Search for products, apply filters, verify results, and interact with product cards",
+    difficulty: "intermediate",
+    category: "ecommerce",
+    mcp: {
+      description: "MCP handles dynamic content well by re-snapshotting after filters/interactions. AI understands product card structure.",
+      code: `// Step 1: Navigate to shop
+browser_navigate({
+  url: "https://example.com/shop"
+})
+
+// Step 2: Perform search
+browser_type({
+  text: "wireless headphones",
+  description: "search input field"
+})
+
+browser_press_key({
+  key: "Enter"
+})
+
+// Step 3: Wait and verify results loaded
+browser_snapshot()
+// AI confirms search results are visible
+
+// Step 4: Apply price filter
+browser_click({
+  description: "price range $50-$100 checkbox"
+})
+
+// Step 5: Verify filtered results
+browser_snapshot()
+// AI verifies only products in price range are shown
+
+// Step 6: Sort by rating
+browser_select_option({
+  description: "sort dropdown",
+  value: "rating-high-to-low"
+})
+
+// Step 7: Click first product
+browser_click({
+  description: "first product card"
+})
+
+// Step 8: Verify product page
+browser_snapshot()
+// AI confirms product details page loaded with correct product`
+    },
+    cli: {
+      description: "CLI workflow is efficient for fixed selectors. Good for performance testing or parallel search scenarios.",
+      code: `# Step 1: Open shop page
+playwright open https://example.com/shop
+playwright snapshot
+
+# Step 2: Search for product (get search input ref)
+playwright fill #5 "wireless headphones"
+playwright press Enter
+
+# Step 3: Wait for results and snapshot
+playwright snapshot
+
+# Step 4: Apply price filter (get filter checkbox ref)
+playwright check #15
+
+# Step 5: Verify filters applied
+playwright snapshot
+
+# Step 6: Sort by rating (get dropdown ref)
+playwright select #18 "rating-high-to-low"
+
+# Step 7: Take screenshot of results
+playwright screenshot
+
+# Step 8: Click first product (get product card ref)
+playwright click #22
+
+# Step 9: Verify product page loaded
+playwright snapshot`
+    },
+    testRunner: {
+      description: "Test Runner excels at verifying dynamic lists, waiting for network requests, and asserting multiple conditions.",
+      code: `import { test, expect } from '@playwright/test';
+
+test('e-commerce product search flow', async ({ page }) => {
+  // Step 1: Navigate to shop
+  await page.goto('https://example.com/shop');
+
+  // Step 2: Search for products
+  await page.fill('input[type="search"]', 'wireless headphones');
+  await page.press('input[type="search"]', 'Enter');
+
+  // Step 3: Wait for results to load
+  await page.waitForSelector('.product-card');
+  const productCount = await page.locator('.product-card').count();
+  expect(productCount).toBeGreaterThan(0);
+
+  // Step 4: Apply price filter
+  await page.check('input[name="price"][value="50-100"]');
+
+  // Step 5: Verify filtered results
+  await page.waitForLoadState('networkidle');
+  const prices = await page.locator('.product-price').allTextContents();
+  prices.forEach(price => {
+    const value = parseFloat(price.replace('$', ''));
+    expect(value).toBeGreaterThanOrEqual(50);
+    expect(value).toBeLessThanOrEqual(100);
+  });
+
+  // Step 6: Sort by rating
+  await page.selectOption('select[name="sort"]', 'rating-high-to-low');
+
+  // Step 7: Verify sorting
+  await page.waitForLoadState('networkidle');
+  const ratings = await page.locator('.product-rating').allTextContents();
+  // Verify descending order
+  for (let i = 0; i < ratings.length - 1; i++) {
+    expect(parseFloat(ratings[i])).toBeGreaterThanOrEqual(parseFloat(ratings[i + 1]));
+  }
+
+  // Step 8: Click first product
+  await page.locator('.product-card').first().click();
+
+  // Step 9: Verify product page
+  await expect(page).toHaveURL(/.*\/product\/.*/);
+  await expect(page.locator('h1.product-title')).toBeVisible();
+  await expect(page.locator('.add-to-cart-btn')).toBeEnabled();
+});`
+    },
+    expectedResult: "Search returns relevant products, filters work correctly, sorting is accurate, and product page loads with all details",
+    proTip: "Use Test Runner for data validation (prices, ratings). MCP is great for visual verification. CLI is best for quick smoke tests."
+  }
+];
+
 const comparisonData = [
   { aspect: "Token Efficiency", mcp: "Heavy — loads full tool schemas + snapshots", cli: "Lightweight — concise commands, minimal context", winner: "cli" },
   { aspect: "State Management", mcp: "Persistent browser context per MCP session", cli: "Named sessions with cookie/storage persistence", winner: "tie" },
@@ -733,74 +1070,6 @@ export default function PlaywrightWarmCheatsheet() {
           line-height: 1.6;
         }
 
-        .publish-section {
-          background: linear-gradient(135deg, #fefce8, #fef9c3);
-          border: 2px solid #facc15;
-          border-radius: 20px;
-          padding: 32px;
-          margin-bottom: 36px;
-        }
-
-        .publish-title {
-          font-family: 'Playfair Display', serif;
-          font-size: 22px;
-          font-weight: 800;
-          color: #713f12;
-          margin-bottom: 16px;
-          display: flex;
-          align-items: center;
-          gap: 10px;
-        }
-
-        .publish-grid {
-          display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-          gap: 14px;
-        }
-
-        .publish-option {
-          background: white;
-          border: 1px solid #fde68a;
-          border-radius: 14px;
-          padding: 18px;
-          transition: all 0.3s;
-        }
-
-        .publish-option:hover {
-          transform: translateY(-3px);
-          box-shadow: 0 6px 20px rgba(161,98,7,0.1);
-          border-color: #f59e0b;
-        }
-
-        .publish-name {
-          font-family: 'Source Sans 3', sans-serif;
-          font-size: 14px;
-          font-weight: 700;
-          color: #78350f;
-          margin-bottom: 6px;
-          display: flex;
-          align-items: center;
-          gap: 8px;
-        }
-
-        .publish-desc {
-          font-family: 'Source Sans 3', sans-serif;
-          font-size: 12.5px;
-          color: #92400e;
-          line-height: 1.55;
-        }
-
-        .publish-tag {
-          display: inline-block;
-          font-family: 'IBM Plex Mono', monospace;
-          font-size: 10.5px;
-          background: #fef3c7;
-          color: #92400e;
-          padding: 2px 8px;
-          border-radius: 4px;
-          margin-top: 6px;
-        }
-
         .footer-bar {
           text-align: center;
           padding: 20px 28px 32px;
@@ -1048,60 +1317,6 @@ export default function PlaywrightWarmCheatsheet() {
             </div>
             <div className="setup-desc">
               The gold standard for CI/CD. Headed/headless execution, HTML reports, trace viewer, codegen, and UI mode for visual debugging.
-            </div>
-          </div>
-        </div>
-
-        {/* PUBLISH GUIDE */}
-        <div className="publish-section">
-          <div className="publish-title">
-            🚀 How to Publish & Share on LinkedIn
-          </div>
-          <p style={{ fontFamily: "'Source Sans 3'", fontSize: 14, color: "#78350f", marginBottom: 18, lineHeight: 1.6 }}>
-            Here are the best ways to turn this cheatsheet into a shareable, live page your network can access:
-          </p>
-          <div className="publish-grid">
-            <div className="publish-option">
-              <div className="publish-name">🟢 GitHub Pages (Free)</div>
-              <div className="publish-desc">
-                Push the .jsx to a React repo, run <code>npm run build</code>, deploy to GitHub Pages. Share the <strong>github.io</strong> link on LinkedIn.
-              </div>
-              <div className="publish-tag">git push → auto-deploy</div>
-            </div>
-            <div className="publish-option">
-              <div className="publish-name">▲ Vercel (Easiest)</div>
-              <div className="publish-desc">
-                Import your GitHub repo → Vercel auto-detects React → deploys in 30s. Get a clean <strong>yourname.vercel.app</strong> URL.
-              </div>
-              <div className="publish-tag">Zero config • Free tier</div>
-            </div>
-            <div className="publish-option">
-              <div className="publish-name">⚡ Netlify (Drop & Go)</div>
-              <div className="publish-desc">
-                Build locally, drag the <code>/dist</code> folder to netlify.com/drop. Instant URL, custom domain optional.
-              </div>
-              <div className="publish-tag">Drag & drop deploy</div>
-            </div>
-            <div className="publish-option">
-              <div className="publish-name">📦 CodeSandbox / StackBlitz</div>
-              <div className="publish-desc">
-                Paste this JSX into a sandbox → get a live URL instantly. Great for embedding in LinkedIn articles or blog posts.
-              </div>
-              <div className="publish-tag">Instant preview link</div>
-            </div>
-            <div className="publish-option">
-              <div className="publish-name">🔗 LinkedIn Publishing Tips</div>
-              <div className="publish-desc">
-                Share the deployed link with a carousel screenshot (use browser DevTools → screenshot). Add hashtags: <strong>#Playwright #MCP #QAAutomation #AI</strong>
-              </div>
-              <div className="publish-tag">#LinkedInStrategy</div>
-            </div>
-            <div className="publish-option">
-              <div className="publish-name">📄 Export as PDF</div>
-              <div className="publish-desc">
-                Open in browser → <code>Ctrl+P</code> → Save as PDF. Upload to LinkedIn as a document post for carousel-style engagement.
-              </div>
-              <div className="publish-tag">High engagement format</div>
             </div>
           </div>
         </div>
