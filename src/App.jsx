@@ -1732,18 +1732,122 @@ export default function PlaywrightWarmCheatsheet() {
             padding: 3px 8px;
           }
 
-          /* Table improvements */
-          .table-header, .table-row {
-            grid-template-columns: 1fr 1fr;
-            gap: 8px;
-            font-size: 11px;
-            padding: 10px 8px;
+          /* Mobile Table Redesign - Card Layout */
+          .table-wrapper {
+            border: none;
+            background: transparent;
+            overflow: visible;
           }
 
+          .table-header {
+            display: none; /* Hide header on mobile */
+          }
+
+          .table-row {
+            display: flex;
+            flex-direction: column;
+            grid-template-columns: unset;
+            background: white;
+            border: 1.5px solid var(--warm-tan);
+            border-radius: 12px;
+            padding: 14px 16px;
+            margin-bottom: 12px;
+            gap: 10px;
+          }
+
+          .table-row:hover {
+            background: white;
+            transform: none;
+          }
+
+          .action-name {
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--warm-dark);
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--warm-tan);
+            margin-bottom: 4px;
+          }
+
+          .table-row > div:not(.action-name) {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px 10px;
+            background: var(--warm-cream);
+            border-radius: 8px;
+            min-height: 40px;
+          }
+
+          .table-row > div:not(.action-name)::before {
+            content: attr(data-label);
+            font-family: 'Source Sans 3', sans-serif;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            margin-right: 10px;
+            flex-shrink: 0;
+          }
+
+          .table-row > div:nth-child(2)::before {
+            content: "🤖 MCP";
+            color: #4f46e5;
+          }
+
+          .table-row > div:nth-child(3)::before {
+            content: "⚡ CLI";
+            color: #059669;
+          }
+
+          .table-row > div:nth-child(4)::before {
+            content: "🧪 TEST";
+            color: #d97706;
+          }
+
+          /* Tag improvements for mobile */
+          .tag-mcp,
+          .tag-cli,
+          .tag-test,
+          .tag-na {
+            font-size: 12px !important;
+            padding: 6px 12px !important;
+            flex: 1;
+            text-align: right;
+            word-break: break-word;
+          }
+
+          /* Comparison table mobile */
           .comp-row {
-            grid-template-columns: 1fr;
+            display: flex;
+            flex-direction: column;
+            grid-template-columns: unset;
+            padding: 14px 16px;
+            gap: 12px;
+            background: white;
+            border-bottom: 1.5px solid var(--warm-tan);
+          }
+
+          .comp-row:first-child {
+            display: none; /* Hide comparison header on mobile */
+          }
+
+          .comp-row > div {
+            display: flex;
+            flex-direction: column;
             gap: 6px;
-            padding: 8px;
+            padding: 10px;
+            background: var(--warm-cream);
+            border-radius: 8px;
+          }
+
+          .comp-row > div:first-child {
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--warm-dark);
+            background: transparent;
+            padding: 0 0 10px 0;
+            border-bottom: 1px solid var(--warm-tan);
           }
 
           /* Category sections */
@@ -1839,6 +1943,54 @@ export default function PlaywrightWarmCheatsheet() {
           .footer-bar {
             padding: 16px 16px 24px;
             font-size: 11px;
+          }
+
+          /* Smaller table cards for tiny screens */
+          .table-row {
+            padding: 12px 14px;
+            margin-bottom: 10px;
+          }
+
+          .action-name {
+            font-size: 14px;
+            padding-bottom: 8px;
+            margin-bottom: 4px;
+          }
+
+          .table-row > div:not(.action-name) {
+            padding: 6px 8px;
+            font-size: 11px;
+            min-height: 36px;
+          }
+
+          .table-row > div:not(.action-name)::before {
+            font-size: 10px;
+            letter-spacing: 1px;
+          }
+
+          .tag-mcp,
+          .tag-cli,
+          .tag-test,
+          .tag-na {
+            font-size: 11px !important;
+            padding: 5px 10px !important;
+            line-height: 1.4;
+          }
+
+          /* Comparison table for small screens */
+          .comp-row {
+            padding: 12px 14px;
+            gap: 10px;
+          }
+
+          .comp-row > div {
+            padding: 8px;
+            font-size: 12px;
+          }
+
+          .comp-row > div:first-child {
+            font-size: 14px;
+            padding: 0 0 8px 0;
           }
         }
       `}</style>
