@@ -487,6 +487,9 @@ export default function PlaywrightWarmCheatsheet() {
   const [view, setView] = useState("category");
   const [loaded, setLoaded] = useState(false);
   const [showComparison, setShowComparison] = useState(false);
+  const [expandedWorkflow, setExpandedWorkflow] = useState(null);
+  const [workflowTab, setWorkflowTab] = useState({});
+  const [copiedCode, setCopiedCode] = useState({});
 
   useEffect(() => { setTimeout(() => setLoaded(true), 80); }, []);
 
@@ -501,6 +504,19 @@ export default function PlaywrightWarmCheatsheet() {
     : categories;
 
   const displayCats = view === "all" || search ? filtered : [categories[activeCat]];
+
+  const handleCopyCode = (workflowId, code) => {
+    navigator.clipboard.writeText(code);
+    setCopiedCode(prev => ({ ...prev, [workflowId]: true }));
+    setTimeout(() => {
+      setCopiedCode(prev => ({ ...prev, [workflowId]: false }));
+    }, 2000);
+  };
+
+  const getActiveTab = (workflowId) => workflowTab[workflowId] || 'mcp';
+  const setActiveTab = (workflowId, tab) => {
+    setWorkflowTab(prev => ({ ...prev, [workflowId]: tab }));
+  };
 
   return (
     <div style={{ minHeight: "100vh", background: "#fdf6ee", position: "relative", overflow: "hidden" }}>
