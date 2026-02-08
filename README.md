@@ -19,21 +19,6 @@ npm run dev
 npm run build
 ```
 
-## 📦 Deploy to Vercel
-
-### Option 1: GitHub → Vercel (recommended)
-1. Push this repo to GitHub
-2. Go to [vercel.com/new](https://vercel.com/new)
-3. Import your GitHub repo
-4. Vercel auto-detects Vite — just click **Deploy**
-5. Done! Live at `your-project.vercel.app`
-
-### Option 2: Vercel CLI
-```bash
-npm i -g vercel
-vercel
-```
-
 ## 📋 What's Inside
 
 - **50+ Commands** — Navigation, Interactions, Capture, Tabs, DevTools, Testing
@@ -44,6 +29,10 @@ vercel
 
 ## 👤 Author
 
-**Rocky** — Sr. QA Automation Engineer & Test Architect
+**Rakesh Arrepu** — Test Architect · AI Enthusiast
+
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-Connect-0077b5?style=flat&logo=linkedin)](https://www.linkedin.com/in/rakesh-arrepu/)
+
+---
 
 #Playwright #MCP #AgenticAI #QAAutomation #TestArchitecture
