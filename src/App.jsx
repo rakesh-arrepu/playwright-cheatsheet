@@ -1,6 +1,79 @@
 import { useState, useEffect, useRef } from "react";
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
-import { atomDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
+
+// Custom warm editorial syntax theme
+const warmCodeTheme = {
+  'code[class*="language-"]': {
+    color: '#3d2b1f',
+    fontFamily: "'IBM Plex Mono', 'Courier New', monospace",
+    fontSize: '13.5px',
+    lineHeight: '1.75',
+    direction: 'ltr',
+    textAlign: 'left',
+    whiteSpace: 'pre',
+    wordSpacing: 'normal',
+    wordBreak: 'normal',
+    MozTabSize: '2',
+    OTabSize: '2',
+    tabSize: '2',
+    WebkitHyphens: 'none',
+    MozHyphens: 'none',
+    msHyphens: 'none',
+    hyphens: 'none',
+  },
+  'pre[class*="language-"]': {
+    color: '#3d2b1f',
+    fontFamily: "'IBM Plex Mono', 'Courier New', monospace",
+    fontSize: '13.5px',
+    lineHeight: '1.75',
+    direction: 'ltr',
+    textAlign: 'left',
+    whiteSpace: 'pre',
+    wordSpacing: 'normal',
+    wordBreak: 'normal',
+    MozTabSize: '2',
+    OTabSize: '2',
+    tabSize: '2',
+    WebkitHyphens: 'none',
+    MozHyphens: 'none',
+    msHyphens: 'none',
+    hyphens: 'none',
+    padding: '24px',
+    margin: '0',
+    overflow: 'auto',
+    background: 'linear-gradient(135deg, #fdfcfb 0%, #faf8f5 100%)',
+    borderRadius: '10px',
+  },
+  'comment': { color: '#a89984', fontStyle: 'italic' },
+  'prolog': { color: '#a89984' },
+  'doctype': { color: '#a89984' },
+  'cdata': { color: '#a89984' },
+  'punctuation': { color: '#8b6f47' },
+  'property': { color: '#b45309' },
+  'tag': { color: '#b45309' },
+  'boolean': { color: '#c2410c' },
+  'number': { color: '#c2410c' },
+  'constant': { color: '#c2410c' },
+  'symbol': { color: '#c2410c' },
+  'deleted': { color: '#dc2626' },
+  'selector': { color: '#3f6212' },
+  'attr-name': { color: '#3f6212' },
+  'string': { color: '#3f6212', fontWeight: '500' },
+  'char': { color: '#3f6212' },
+  'builtin': { color: '#065f46' },
+  'inserted': { color: '#059669' },
+  'operator': { color: '#78350f' },
+  'entity': { color: '#78350f', cursor: 'help' },
+  'url': { color: '#78350f' },
+  'variable': { color: '#92400e' },
+  'atrule': { color: '#6b21a8' },
+  'attr-value': { color: '#3f6212', fontWeight: '500' },
+  'keyword': { color: '#6b21a8', fontWeight: '600' },
+  'function': { color: '#1e40af', fontWeight: '600' },
+  'class-name': { color: '#1e40af', fontWeight: '600' },
+  'regex': { color: '#c2410c' },
+  'important': { color: '#dc2626', fontWeight: 'bold' },
+};
 
 const categories = [
   {
@@ -1282,75 +1355,105 @@ export default function PlaywrightWarmCheatsheet() {
         }
 
         .workflow-code-block {
-          background: linear-gradient(135deg, #f8f9fa, #ffffff);
+          background: linear-gradient(135deg,
+            rgba(253,252,251,0.9) 0%,
+            rgba(250,248,245,0.95) 100%
+          );
           border: 2px solid var(--warm-tan);
-          border-radius: 14px;
-          padding: 24px;
+          border-radius: 16px;
+          padding: 28px;
           margin-bottom: 20px;
           position: relative;
-          box-shadow: inset 0 1px 3px rgba(0,0,0,0.03),
-                      0 2px 8px rgba(139,111,71,0.05);
+          box-shadow:
+            inset 0 1px 0 rgba(255,255,255,0.8),
+            0 4px 16px rgba(139,111,71,0.08),
+            0 1px 3px rgba(139,111,71,0.12);
+          transition: all 0.3s ease;
+        }
+
+        .workflow-code-block:hover {
+          box-shadow:
+            inset 0 1px 0 rgba(255,255,255,0.8),
+            0 6px 24px rgba(139,111,71,0.12),
+            0 2px 6px rgba(139,111,71,0.15);
+          border-color: var(--warm-brown);
+        }
+
+        .workflow-code-block::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          height: 4px;
+          background: linear-gradient(90deg,
+            var(--accent-terracotta) 0%,
+            var(--accent-gold) 50%,
+            var(--accent-sage) 100%
+          );
+          border-radius: 16px 16px 0 0;
+          opacity: 0.6;
         }
 
         .workflow-code-header {
           font-family: 'Source Sans 3', sans-serif;
-          font-size: 12.5px;
-          color: var(--warm-brown);
-          margin-bottom: 16px;
-          font-style: italic;
-          font-weight: 500;
-          padding-bottom: 12px;
-          border-bottom: 1px solid rgba(232,213,192,0.4);
-        }
-
-        .workflow-code {
-          font-family: 'IBM Plex Mono', monospace;
           font-size: 13px;
-          line-height: 1.8;
-          color: #2d3748;
-          white-space: pre-wrap;
-          word-break: break-word;
-          letter-spacing: -0.2px;
-          background: ghostwhite;
-          padding: 16px;
-          border-radius: 8px;
+          color: var(--warm-brown);
+          margin-bottom: 18px;
+          font-style: italic;
+          font-weight: 600;
+          padding-bottom: 14px;
+          border-bottom: 2px solid rgba(232,213,192,0.5);
+          letter-spacing: 0.01em;
+          line-height: 1.6;
         }
 
         .workflow-copy-btn {
           position: absolute;
-          top: 20px;
-          right: 20px;
+          top: 24px;
+          right: 24px;
           font-family: 'Source Sans 3', sans-serif;
-          font-size: 11.5px;
+          font-size: 11px;
           font-weight: 700;
-          padding: 8px 16px;
-          border-radius: 8px;
-          border: 1.5px solid var(--warm-tan);
-          background: white;
+          padding: 9px 18px;
+          border-radius: 10px;
+          border: 2px solid var(--warm-tan);
+          background: linear-gradient(135deg, #ffffff 0%, #fdfcfb 100%);
           color: var(--warm-brown);
           cursor: pointer;
           transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-          letter-spacing: 0.5px;
+          letter-spacing: 0.8px;
           text-transform: uppercase;
-          box-shadow: 0 2px 4px rgba(139,111,71,0.08);
+          box-shadow:
+            inset 0 1px 0 rgba(255,255,255,0.8),
+            0 2px 6px rgba(139,111,71,0.1);
+          backdrop-filter: blur(4px);
         }
 
         .workflow-copy-btn:hover {
-          background: var(--warm-sand);
+          background: linear-gradient(135deg, var(--warm-sand) 0%, var(--warm-cream) 100%);
           border-color: var(--warm-brown);
           transform: translateY(-2px);
-          box-shadow: 0 4px 12px rgba(139,111,71,0.15);
+          box-shadow:
+            inset 0 1px 0 rgba(255,255,255,0.8),
+            0 4px 16px rgba(139,111,71,0.18);
         }
 
         .workflow-copy-btn:active {
           transform: translateY(0);
+          box-shadow:
+            inset 0 1px 2px rgba(139,111,71,0.15),
+            0 1px 3px rgba(139,111,71,0.1);
         }
 
         .workflow-copy-btn.copied {
-          background: linear-gradient(135deg, #d1fae5, #a7f3d0);
-          border-color: #34d399;
+          background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+          border-color: #059669;
           color: #065f46;
           animation: successPulse 0.5s ease-out;
+          box-shadow:
+            inset 0 1px 0 rgba(255,255,255,0.5),
+            0 2px 8px rgba(5,150,105,0.25);
         }
 
         @keyframes successPulse {
@@ -1780,21 +1883,29 @@ export default function PlaywrightWarmCheatsheet() {
                     </div>
                     <SyntaxHighlighter
                       language={getCodeLanguage(getActiveTab(workflow.id))}
-                      style={atomDark}
+                      style={warmCodeTheme}
                       customStyle={{
-                        background: 'ghostwhite',
-                        padding: '20px',
-                        borderRadius: '8px',
-                        fontSize: '13px',
-                        lineHeight: '1.8',
-                        margin: 0
+                        background: 'linear-gradient(135deg, #fdfcfb 0%, #faf8f5 100%)',
+                        padding: '24px 28px',
+                        borderRadius: '12px',
+                        fontSize: '13.5px',
+                        lineHeight: '1.75',
+                        margin: 0,
+                        border: '1px solid #e8d5c0',
+                        boxShadow: 'inset 0 1px 3px rgba(139,111,71,0.08), 0 1px 2px rgba(139,111,71,0.05)',
+                        fontWeight: '400',
+                        letterSpacing: '0.01em'
                       }}
                       codeTagProps={{
                         style: {
-                          fontFamily: "'IBM Plex Mono', monospace",
-                          letterSpacing: '-0.2px'
+                          fontFamily: "'IBM Plex Mono', 'Courier New', monospace",
+                          textShadow: '0 1px 1px rgba(255,255,255,0.8)',
+                          fontVariantLigatures: 'none'
                         }
                       }}
+                      showLineNumbers={false}
+                      wrapLines={true}
+                      wrapLongLines={true}
                     >
                       {workflow[getActiveTab(workflow.id)].code}
                     </SyntaxHighlighter>
