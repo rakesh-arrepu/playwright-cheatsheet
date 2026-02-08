@@ -1543,7 +1543,7 @@ export default function PlaywrightWarmCheatsheet() {
             { n: totalMCP, label: "MCP Tools", color: "#4f46e5", border: "#c7d2fe" },
             { n: totalCLI, label: "CLI Skills", color: "#059669", border: "#a7f3d0" },
             { n: totalTest, label: "Test Runner", color: "#d97706", border: "#fcd34d" },
-            { n: categories.length, label: "Categories", color: "#c2410c", border: "#fed7aa" },
+            { n: workflows.length, label: "Workflows", color: "#9f1239", border: "#fecdd3" },
           ].map((s, i) => (
             <div className="stat-box" key={i} style={{ "--top-color": s.color }}>
               <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 3, background: s.color, borderRadius: "14px 14px 0 0" }} />
