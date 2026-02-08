@@ -1,4 +1,79 @@
 import { useState, useEffect, useRef } from "react";
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+
+// Custom warm editorial syntax theme
+const warmCodeTheme = {
+  'code[class*="language-"]': {
+    color: '#3d2b1f',
+    fontFamily: "'IBM Plex Mono', 'Courier New', monospace",
+    fontSize: '13.5px',
+    lineHeight: '1.75',
+    direction: 'ltr',
+    textAlign: 'left',
+    whiteSpace: 'pre',
+    wordSpacing: 'normal',
+    wordBreak: 'normal',
+    MozTabSize: '2',
+    OTabSize: '2',
+    tabSize: '2',
+    WebkitHyphens: 'none',
+    MozHyphens: 'none',
+    msHyphens: 'none',
+    hyphens: 'none',
+  },
+  'pre[class*="language-"]': {
+    color: '#3d2b1f',
+    fontFamily: "'IBM Plex Mono', 'Courier New', monospace",
+    fontSize: '13.5px',
+    lineHeight: '1.75',
+    direction: 'ltr',
+    textAlign: 'left',
+    whiteSpace: 'pre',
+    wordSpacing: 'normal',
+    wordBreak: 'normal',
+    MozTabSize: '2',
+    OTabSize: '2',
+    tabSize: '2',
+    WebkitHyphens: 'none',
+    MozHyphens: 'none',
+    msHyphens: 'none',
+    hyphens: 'none',
+    padding: '24px',
+    margin: '0',
+    overflow: 'auto',
+    background: 'linear-gradient(135deg, #fdfcfb 0%, #faf8f5 100%)',
+    borderRadius: '10px',
+  },
+  'comment': { color: '#a89984', fontStyle: 'italic' },
+  'prolog': { color: '#a89984' },
+  'doctype': { color: '#a89984' },
+  'cdata': { color: '#a89984' },
+  'punctuation': { color: '#8b6f47' },
+  'property': { color: '#b45309' },
+  'tag': { color: '#b45309' },
+  'boolean': { color: '#c2410c' },
+  'number': { color: '#c2410c' },
+  'constant': { color: '#c2410c' },
+  'symbol': { color: '#c2410c' },
+  'deleted': { color: '#dc2626' },
+  'selector': { color: '#3f6212' },
+  'attr-name': { color: '#3f6212' },
+  'string': { color: '#3f6212', fontWeight: '500' },
+  'char': { color: '#3f6212' },
+  'builtin': { color: '#065f46' },
+  'inserted': { color: '#059669' },
+  'operator': { color: '#78350f' },
+  'entity': { color: '#78350f', cursor: 'help' },
+  'url': { color: '#78350f' },
+  'variable': { color: '#92400e' },
+  'atrule': { color: '#6b21a8' },
+  'attr-value': { color: '#3f6212', fontWeight: '500' },
+  'keyword': { color: '#6b21a8', fontWeight: '600' },
+  'function': { color: '#1e40af', fontWeight: '600' },
+  'class-name': { color: '#1e40af', fontWeight: '600' },
+  'regex': { color: '#c2410c' },
+  'important': { color: '#dc2626', fontWeight: 'bold' },
+};
 
 const categories = [
   {
@@ -120,6 +195,343 @@ const categories = [
   },
 ];
 
+const workflows = [
+  {
+    id: "login-auth",
+    name: "Login Authentication Flow",
+    icon: "🔐",
+    description: "Complete end-to-end login test covering navigation, form interaction, and post-login verification",
+    difficulty: "beginner",
+    category: "authentication",
+    mcp: {
+      description: "MCP uses accessibility snapshots to understand page state, then chains browser_navigate → browser_type → browser_click → browser_snapshot for verification.",
+      code: `// Step 1: Navigate to login page
+browser_navigate({
+  url: "https://example.com/login"
+})
+
+// Step 2: Fill username (MCP auto-detects input fields from snapshot)
+browser_type({
+  text: "testuser@example.com",
+  description: "email input field"
+})
+
+// Step 3: Fill password
+browser_type({
+  text: "SecurePass123!",
+  description: "password input field"
+})
+
+// Step 4: Click login button
+browser_click({
+  description: "login submit button"
+})
+
+// Step 5: Verify successful login
+browser_snapshot()
+// AI agent verifies "Welcome" or dashboard elements in snapshot`
+    },
+    cli: {
+      description: "CLI uses snapshot references (ref IDs) for element targeting. Requires one initial snapshot, then direct interactions.",
+      code: `# Step 1: Open page and get initial snapshot
+playwright open https://example.com/login
+playwright snapshot
+
+# Step 2: Type in email field (use ref from snapshot, e.g., #12)
+playwright fill #12 "testuser@example.com"
+
+# Step 3: Type in password field (ref #13)
+playwright fill #13 "SecurePass123!"
+
+# Step 4: Click login button (ref #14)
+playwright click #14
+
+# Step 5: Wait and verify
+playwright snapshot
+# Check output for success indicators`
+    },
+    testRunner: {
+      description: "Test Runner provides full assertion library, automatic waiting, and retry logic. Most robust for CI/CD.",
+      code: `import { test, expect } from '@playwright/test';
+
+test('login authentication flow', async ({ page }) => {
+  // Step 1: Navigate to login page
+  await page.goto('https://example.com/login');
+
+  // Step 2: Fill email field
+  await page.fill('input[type="email"]', 'testuser@example.com');
+
+  // Step 3: Fill password field
+  await page.fill('input[type="password"]', 'SecurePass123!');
+
+  // Step 4: Click login button
+  await page.click('button[type="submit"]');
+
+  // Step 5: Assert successful login
+  await expect(page).toHaveURL(/.*dashboard/);
+  await expect(page.locator('.welcome-message')).toBeVisible();
+  await expect(page.locator('.user-avatar')).toContainText('testuser');
+});`
+    },
+    expectedResult: "User successfully logs in and lands on dashboard with welcome message visible",
+    proTip: "MCP excels when field labels change (uses AI understanding). CLI is fastest for stable UIs. Test Runner is most reliable for regression suites."
+  },
+  {
+    id: "form-validation",
+    name: "Form Validation Testing",
+    icon: "📝",
+    description: "Testing client-side form validation by intentionally triggering error states and verifying messages",
+    difficulty: "intermediate",
+    category: "forms",
+    mcp: {
+      description: "MCP can intelligently detect validation messages from accessibility tree without explicit selectors.",
+      code: `// Step 1: Navigate to form
+browser_navigate({
+  url: "https://example.com/signup"
+})
+
+// Step 2: Submit empty form to trigger validation
+browser_click({
+  description: "submit button"
+})
+
+// Step 3: Capture validation state
+browser_snapshot()
+// AI reads "Email is required" from accessibility tree
+
+// Step 4: Fill invalid email
+browser_type({
+  text: "not-an-email",
+  description: "email input"
+})
+
+browser_click({
+  description: "submit button"
+})
+
+// Step 5: Verify error message
+browser_snapshot()
+// AI confirms "Invalid email format" is present
+
+// Step 6: Fix validation and submit
+browser_type({
+  text: "valid@example.com",
+  description: "email input"
+})
+
+browser_type({
+  text: "StrongPass123!",
+  description: "password input"
+})
+
+browser_click({
+  description: "submit button"
+})
+
+// Step 7: Verify success
+browser_snapshot()
+// AI confirms no error messages, success state visible`
+    },
+    cli: {
+      description: "CLI requires explicit snapshot + ref workflow, but is very token-efficient for repeated validation checks.",
+      code: `# Step 1: Open signup form
+playwright open https://example.com/signup
+playwright snapshot
+
+# Step 2: Submit without filling (get submit button ref)
+playwright click #20
+playwright snapshot
+# Manually check output for "Email is required"
+
+# Step 3: Fill invalid email (get email field ref)
+playwright fill #18 "not-an-email"
+playwright click #20
+playwright snapshot
+# Check for "Invalid email format"
+
+# Step 4: Fix validation
+playwright fill #18 "valid@example.com"
+playwright fill #19 "StrongPass123!"
+
+# Step 5: Submit valid form
+playwright click #20
+playwright snapshot
+# Verify success message or redirect`
+    },
+    testRunner: {
+      description: "Test Runner provides explicit assertions for validation states, making tests self-documenting and reliable.",
+      code: `import { test, expect } from '@playwright/test';
+
+test('form validation flow', async ({ page }) => {
+  // Step 1: Navigate to form
+  await page.goto('https://example.com/signup');
+
+  // Step 2: Submit empty form
+  await page.click('button[type="submit"]');
+
+  // Step 3: Assert validation errors appear
+  await expect(page.locator('.error-email')).toHaveText('Email is required');
+  await expect(page.locator('.error-password')).toHaveText('Password is required');
+
+  // Step 4: Fill invalid email
+  await page.fill('input[name="email"]', 'not-an-email');
+  await page.click('button[type="submit"]');
+
+  // Step 5: Assert invalid format error
+  await expect(page.locator('.error-email')).toHaveText('Invalid email format');
+
+  // Step 6: Fix validation
+  await page.fill('input[name="email"]', 'valid@example.com');
+  await page.fill('input[name="password"]', 'StrongPass123!');
+
+  // Step 7: Submit valid form
+  await page.click('button[type="submit"]');
+
+  // Step 8: Assert success
+  await expect(page.locator('.success-message')).toBeVisible();
+  await expect(page).toHaveURL(/.*success/);
+});`
+    },
+    expectedResult: "Form correctly shows validation errors for invalid inputs, then successfully submits when all fields are valid",
+    proTip: "MCP is best for exploratory testing of validation logic. Test Runner provides explicit assertions that serve as living documentation."
+  },
+  {
+    id: "ecommerce-search",
+    name: "E-commerce Product Search",
+    icon: "🛒",
+    description: "Search for products, apply filters, verify results, and interact with product cards",
+    difficulty: "intermediate",
+    category: "ecommerce",
+    mcp: {
+      description: "MCP handles dynamic content well by re-snapshotting after filters/interactions. AI understands product card structure.",
+      code: `// Step 1: Navigate to shop
+browser_navigate({
+  url: "https://example.com/shop"
+})
+
+// Step 2: Perform search
+browser_type({
+  text: "wireless headphones",
+  description: "search input field"
+})
+
+browser_press_key({
+  key: "Enter"
+})
+
+// Step 3: Wait and verify results loaded
+browser_snapshot()
+// AI confirms search results are visible
+
+// Step 4: Apply price filter
+browser_click({
+  description: "price range $50-$100 checkbox"
+})
+
+// Step 5: Verify filtered results
+browser_snapshot()
+// AI verifies only products in price range are shown
+
+// Step 6: Sort by rating
+browser_select_option({
+  description: "sort dropdown",
+  value: "rating-high-to-low"
+})
+
+// Step 7: Click first product
+browser_click({
+  description: "first product card"
+})
+
+// Step 8: Verify product page
+browser_snapshot()
+// AI confirms product details page loaded with correct product`
+    },
+    cli: {
+      description: "CLI workflow is efficient for fixed selectors. Good for performance testing or parallel search scenarios.",
+      code: `# Step 1: Open shop page
+playwright open https://example.com/shop
+playwright snapshot
+
+# Step 2: Search for product (get search input ref)
+playwright fill #5 "wireless headphones"
+playwright press Enter
+
+# Step 3: Wait for results and snapshot
+playwright snapshot
+
+# Step 4: Apply price filter (get filter checkbox ref)
+playwright check #15
+
+# Step 5: Verify filters applied
+playwright snapshot
+
+# Step 6: Sort by rating (get dropdown ref)
+playwright select #18 "rating-high-to-low"
+
+# Step 7: Take screenshot of results
+playwright screenshot
+
+# Step 8: Click first product (get product card ref)
+playwright click #22
+
+# Step 9: Verify product page loaded
+playwright snapshot`
+    },
+    testRunner: {
+      description: "Test Runner excels at verifying dynamic lists, waiting for network requests, and asserting multiple conditions.",
+      code: `import { test, expect } from '@playwright/test';
+
+test('e-commerce product search flow', async ({ page }) => {
+  // Step 1: Navigate to shop
+  await page.goto('https://example.com/shop');
+
+  // Step 2: Search for products
+  await page.fill('input[type="search"]', 'wireless headphones');
+  await page.press('input[type="search"]', 'Enter');
+
+  // Step 3: Wait for results to load
+  await page.waitForSelector('.product-card');
+  const productCount = await page.locator('.product-card').count();
+  expect(productCount).toBeGreaterThan(0);
+
+  // Step 4: Apply price filter
+  await page.check('input[name="price"][value="50-100"]');
+
+  // Step 5: Verify filtered results
+  await page.waitForLoadState('networkidle');
+  const prices = await page.locator('.product-price').allTextContents();
+  prices.forEach(price => {
+    const value = parseFloat(price.replace('$', ''));
+    expect(value).toBeGreaterThanOrEqual(50);
+    expect(value).toBeLessThanOrEqual(100);
+  });
+
+  // Step 6: Sort by rating
+  await page.selectOption('select[name="sort"]', 'rating-high-to-low');
+
+  // Step 7: Verify sorting
+  await page.waitForLoadState('networkidle');
+  const ratings = await page.locator('.product-rating').allTextContents();
+  // Verify descending order
+  for (let i = 0; i < ratings.length - 1; i++) {
+    expect(parseFloat(ratings[i])).toBeGreaterThanOrEqual(parseFloat(ratings[i + 1]));
+  }
+
+  // Step 8: Click first product
+  await page.locator('.product-card').first().click();
+
+  // Step 9: Verify product page
+  await expect(page).toHaveURL(/.*\/product\/.*/);
+  await expect(page.locator('h1.product-title')).toBeVisible();
+  await expect(page.locator('.add-to-cart-btn')).toBeEnabled();
+});`
+    },
+    expectedResult: "Search returns relevant products, filters work correctly, sorting is accurate, and product page loads with all details",
+    proTip: "Use Test Runner for data validation (prices, ratings). MCP is great for visual verification. CLI is best for quick smoke tests."
+  }
+];
+
 const comparisonData = [
   { aspect: "Token Efficiency", mcp: "Heavy — loads full tool schemas + snapshots", cli: "Lightweight — concise commands, minimal context", winner: "cli" },
   { aspect: "State Management", mcp: "Persistent browser context per MCP session", cli: "Named sessions with cookie/storage persistence", winner: "tie" },
@@ -150,6 +562,9 @@ export default function PlaywrightWarmCheatsheet() {
   const [view, setView] = useState("category");
   const [loaded, setLoaded] = useState(false);
   const [showComparison, setShowComparison] = useState(false);
+  const [expandedWorkflow, setExpandedWorkflow] = useState(null);
+  const [workflowTab, setWorkflowTab] = useState({});
+  const [copiedCode, setCopiedCode] = useState({});
 
   useEffect(() => { setTimeout(() => setLoaded(true), 80); }, []);
 
@@ -164,6 +579,25 @@ export default function PlaywrightWarmCheatsheet() {
     : categories;
 
   const displayCats = view === "all" || search ? filtered : [categories[activeCat]];
+
+  const handleCopyCode = (workflowId, code) => {
+    navigator.clipboard.writeText(code);
+    setCopiedCode(prev => ({ ...prev, [workflowId]: true }));
+    setTimeout(() => {
+      setCopiedCode(prev => ({ ...prev, [workflowId]: false }));
+    }, 2000);
+  };
+
+  const getActiveTab = (workflowId) => workflowTab[workflowId] || 'mcp';
+  const setActiveTab = (workflowId, tab) => {
+    setWorkflowTab(prev => ({ ...prev, [workflowId]: tab }));
+  };
+
+  const getCodeLanguage = (tab) => {
+    if (tab === 'testRunner') return 'javascript';
+    if (tab === 'cli') return 'bash';
+    return 'javascript'; // MCP uses JavaScript-like syntax
+  };
 
   return (
     <div style={{ minHeight: "100vh", background: "#fdf6ee", position: "relative", overflow: "hidden" }}>
@@ -733,72 +1167,401 @@ export default function PlaywrightWarmCheatsheet() {
           line-height: 1.6;
         }
 
-        .publish-section {
-          background: linear-gradient(135deg, #fefce8, #fef9c3);
-          border: 2px solid #facc15;
-          border-radius: 20px;
-          padding: 32px;
-          margin-bottom: 36px;
+        /* Workflow Examples Section */
+        .workflows-section {
+          margin-top: 56px;
+          margin-bottom: 48px;
         }
 
-        .publish-title {
+        .workflow-card {
+          background: white;
+          border: 2px solid var(--warm-tan);
+          border-radius: 18px;
+          margin-bottom: 24px;
+          overflow: hidden;
+          transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+          position: relative;
+        }
+
+        .workflow-card::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          height: 5px;
+          background: linear-gradient(90deg,
+            var(--accent-terracotta),
+            var(--accent-gold),
+            var(--accent-sage),
+            var(--accent-plum)
+          );
+          opacity: 0;
+          transition: opacity 0.4s;
+        }
+
+        .workflow-card:hover {
+          box-shadow: 0 12px 40px rgba(139,111,71,0.15),
+                      0 4px 12px rgba(139,111,71,0.08);
+          transform: translateY(-2px);
+          border-color: var(--warm-brown);
+        }
+
+        .workflow-card:hover::before {
+          opacity: 1;
+        }
+
+        .workflow-header {
+          padding: 24px 28px;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          background: linear-gradient(135deg,
+            rgba(250,240,228,0.5),
+            rgba(255,255,255,0.8)
+          );
+          border-bottom: 2px solid var(--warm-tan);
+          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+          position: relative;
+        }
+
+        .workflow-header:hover {
+          background: linear-gradient(135deg,
+            var(--warm-sand),
+            var(--warm-cream)
+          );
+        }
+
+        .workflow-header-left {
+          display: flex;
+          align-items: center;
+          gap: 16px;
+          flex: 1;
+        }
+
+        .workflow-icon {
+          font-size: 32px;
+          transition: transform 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+          filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
+        }
+
+        .workflow-card:hover .workflow-icon {
+          transform: scale(1.1) rotate(-5deg);
+        }
+
+        .workflow-title {
           font-family: 'Playfair Display', serif;
           font-size: 22px;
           font-weight: 800;
-          color: #713f12;
-          margin-bottom: 16px;
+          color: var(--warm-dark);
+          margin: 0 0 6px 0;
+          letter-spacing: -0.5px;
+          line-height: 1.2;
+        }
+
+        .workflow-description {
+          font-family: 'Source Sans 3', sans-serif;
+          font-size: 14px;
+          color: var(--warm-muted);
+          margin: 0;
+          line-height: 1.5;
+        }
+
+        .workflow-difficulty {
+          font-family: 'Source Sans 3', sans-serif;
+          font-size: 10px;
+          font-weight: 700;
+          text-transform: uppercase;
+          letter-spacing: 1.8px;
+          padding: 6px 14px;
+          border-radius: 100px;
+          background: linear-gradient(135deg, var(--warm-sand), var(--warm-tan));
+          color: var(--warm-brown);
+          box-shadow: inset 0 1px 2px rgba(255,255,255,0.5),
+                      0 2px 4px rgba(139,111,71,0.1);
+        }
+
+        .workflow-expand-icon {
+          font-size: 18px;
+          color: var(--warm-brown);
+          transition: transform 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+          filter: drop-shadow(0 1px 2px rgba(0,0,0,0.1));
+        }
+
+        .workflow-expand-icon.expanded {
+          transform: rotate(180deg);
+        }
+
+        .workflow-content {
+          padding: 32px 28px;
+          background: linear-gradient(135deg,
+            rgba(253,246,238,0.3),
+            rgba(255,255,255,0.5)
+          );
+          animation: slideDown 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        @keyframes slideDown {
+          from {
+            opacity: 0;
+            transform: translateY(-12px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+
+        .workflow-tabs {
           display: flex;
-          align-items: center;
-          gap: 10px;
+          gap: 6px;
+          margin-bottom: 24px;
+          border-bottom: 3px solid var(--warm-tan);
+          padding-bottom: 0;
+          position: relative;
         }
 
-        .publish-grid {
-          display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-          gap: 14px;
+        .workflow-tab {
+          font-family: 'Source Sans 3', sans-serif;
+          font-size: 13.5px;
+          font-weight: 700;
+          padding: 12px 24px;
+          border: none;
+          background: transparent;
+          color: var(--warm-muted);
+          cursor: pointer;
+          border-radius: 10px 10px 0 0;
+          transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+          position: relative;
+          bottom: -3px;
+          letter-spacing: 0.3px;
         }
 
-        .publish-option {
+        .workflow-tab:hover {
+          background: linear-gradient(135deg,
+            rgba(245,230,211,0.5),
+            rgba(250,240,228,0.5)
+          );
+          color: var(--warm-dark);
+          transform: translateY(-2px);
+        }
+
+        .workflow-tab.active {
+          color: var(--warm-dark);
           background: white;
-          border: 1px solid #fde68a;
-          border-radius: 14px;
-          padding: 18px;
+          border-bottom: 3px solid var(--accent-terracotta);
+          box-shadow: 0 -2px 8px rgba(139,111,71,0.08);
+        }
+
+        .workflow-code-block {
+          background: linear-gradient(135deg,
+            rgba(253,252,251,0.9) 0%,
+            rgba(250,248,245,0.95) 100%
+          );
+          border: 2px solid var(--warm-tan);
+          border-radius: 16px;
+          padding: 28px;
+          margin-bottom: 20px;
+          position: relative;
+          box-shadow:
+            inset 0 1px 0 rgba(255,255,255,0.8),
+            0 4px 16px rgba(139,111,71,0.08),
+            0 1px 3px rgba(139,111,71,0.12);
+          transition: all 0.3s ease;
+        }
+
+        .workflow-code-block:hover {
+          box-shadow:
+            inset 0 1px 0 rgba(255,255,255,0.8),
+            0 6px 24px rgba(139,111,71,0.12),
+            0 2px 6px rgba(139,111,71,0.15);
+          border-color: var(--warm-brown);
+        }
+
+        .workflow-code-block::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          height: 4px;
+          background: linear-gradient(90deg,
+            var(--accent-terracotta) 0%,
+            var(--accent-gold) 50%,
+            var(--accent-sage) 100%
+          );
+          border-radius: 16px 16px 0 0;
+          opacity: 0.6;
+        }
+
+        .workflow-code-header {
+          font-family: 'Source Sans 3', sans-serif;
+          font-size: 13px;
+          color: var(--warm-brown);
+          margin-bottom: 18px;
+          font-style: italic;
+          font-weight: 600;
+          padding-bottom: 14px;
+          border-bottom: 2px solid rgba(232,213,192,0.5);
+          letter-spacing: 0.01em;
+          line-height: 1.6;
+        }
+
+        .workflow-copy-btn {
+          position: absolute;
+          top: 24px;
+          right: 24px;
+          font-family: 'Source Sans 3', sans-serif;
+          font-size: 11px;
+          font-weight: 700;
+          padding: 9px 18px;
+          border-radius: 10px;
+          border: 2px solid var(--warm-tan);
+          background: linear-gradient(135deg, #ffffff 0%, #fdfcfb 100%);
+          color: var(--warm-brown);
+          cursor: pointer;
+          transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+          letter-spacing: 0.8px;
+          text-transform: uppercase;
+          box-shadow:
+            inset 0 1px 0 rgba(255,255,255,0.8),
+            0 2px 6px rgba(139,111,71,0.1);
+          backdrop-filter: blur(4px);
+        }
+
+        .workflow-copy-btn:hover {
+          background: linear-gradient(135deg, var(--warm-sand) 0%, var(--warm-cream) 100%);
+          border-color: var(--warm-brown);
+          transform: translateY(-2px);
+          box-shadow:
+            inset 0 1px 0 rgba(255,255,255,0.8),
+            0 4px 16px rgba(139,111,71,0.18);
+        }
+
+        .workflow-copy-btn:active {
+          transform: translateY(0);
+          box-shadow:
+            inset 0 1px 2px rgba(139,111,71,0.15),
+            0 1px 3px rgba(139,111,71,0.1);
+        }
+
+        .workflow-copy-btn.copied {
+          background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+          border-color: #059669;
+          color: #065f46;
+          animation: successPulse 0.5s ease-out;
+          box-shadow:
+            inset 0 1px 0 rgba(255,255,255,0.5),
+            0 2px 8px rgba(5,150,105,0.25);
+        }
+
+        @keyframes successPulse {
+          0%, 100% { transform: scale(1); }
+          50% { transform: scale(1.05); }
+        }
+
+        .workflow-footer {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 24px;
+          padding-top: 20px;
+          border-top: 2px solid var(--warm-tan);
+        }
+
+        .workflow-result,
+        .workflow-tip {
+          padding: 16px;
+          border-radius: 12px;
+          background: white;
+          border: 1.5px solid rgba(232,213,192,0.5);
           transition: all 0.3s;
         }
 
-        .publish-option:hover {
-          transform: translateY(-3px);
-          box-shadow: 0 6px 20px rgba(161,98,7,0.1);
-          border-color: #f59e0b;
+        .workflow-result:hover,
+        .workflow-tip:hover {
+          border-color: var(--warm-tan);
+          box-shadow: 0 4px 12px rgba(139,111,71,0.08);
+          transform: translateY(-2px);
         }
 
-        .publish-name {
+        .workflow-label {
           font-family: 'Source Sans 3', sans-serif;
-          font-size: 14px;
-          font-weight: 700;
-          color: #78350f;
-          margin-bottom: 6px;
+          font-size: 10.5px;
+          font-weight: 800;
+          text-transform: uppercase;
+          letter-spacing: 2px;
+          color: var(--warm-brown);
+          margin-bottom: 8px;
           display: flex;
           align-items: center;
-          gap: 8px;
+          gap: 6px;
         }
 
-        .publish-desc {
+        .workflow-label::before {
+          content: '';
+          width: 20px;
+          height: 2px;
+          background: linear-gradient(90deg,
+            var(--accent-terracotta),
+            var(--accent-gold)
+          );
+          border-radius: 2px;
+        }
+
+        .workflow-text {
           font-family: 'Source Sans 3', sans-serif;
-          font-size: 12.5px;
-          color: #92400e;
-          line-height: 1.55;
+          font-size: 13.5px;
+          color: var(--warm-text);
+          line-height: 1.7;
+          font-weight: 400;
         }
 
-        .publish-tag {
-          display: inline-block;
-          font-family: 'IBM Plex Mono', monospace;
-          font-size: 10.5px;
-          background: #fef3c7;
-          color: #92400e;
-          padding: 2px 8px;
-          border-radius: 4px;
-          margin-top: 6px;
+        @media (max-width: 768px) {
+          .workflow-header-left {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 12px;
+          }
+
+          .workflow-icon {
+            font-size: 28px;
+          }
+
+          .workflow-tabs {
+            flex-direction: column;
+            gap: 8px;
+            border-bottom: none;
+            padding-bottom: 16px;
+          }
+
+          .workflow-tab {
+            border-radius: 10px;
+            width: 100%;
+            bottom: 0;
+            text-align: left;
+            padding: 14px 20px;
+          }
+
+          .workflow-tab.active {
+            border-bottom: none;
+            border-left: 4px solid var(--accent-terracotta);
+            background: linear-gradient(135deg,
+              var(--warm-sand),
+              var(--warm-cream)
+            );
+          }
+
+          .workflow-footer {
+            grid-template-columns: 1fr;
+            gap: 16px;
+          }
+
+          .workflow-copy-btn {
+            position: static;
+            width: 100%;
+            margin-top: 16px;
+          }
         }
 
         .footer-bar {
@@ -894,7 +1657,7 @@ export default function PlaywrightWarmCheatsheet() {
             { n: totalMCP, label: "MCP Tools", color: "#4f46e5", border: "#c7d2fe" },
             { n: totalCLI, label: "CLI Skills", color: "#059669", border: "#a7f3d0" },
             { n: totalTest, label: "Test Runner", color: "#d97706", border: "#fcd34d" },
-            { n: categories.length, label: "Categories", color: "#c2410c", border: "#fed7aa" },
+            { n: workflows.length, label: "Workflows", color: "#9f1239", border: "#fecdd3" },
           ].map((s, i) => (
             <div className="stat-box" key={i} style={{ "--top-color": s.color }}>
               <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 3, background: s.color, borderRadius: "14px 14px 0 0" }} />
@@ -1052,58 +1815,122 @@ export default function PlaywrightWarmCheatsheet() {
           </div>
         </div>
 
-        {/* PUBLISH GUIDE */}
-        <div className="publish-section">
-          <div className="publish-title">
-            🚀 How to Publish & Share on LinkedIn
+        {/* WORKFLOWS SECTION */}
+        <div className="workflows-section">
+          <div className="section-heading">
+            <span>💼</span> Complete Workflow Examples
+            <span className="section-count">{workflows.length}</span>
           </div>
-          <p style={{ fontFamily: "'Source Sans 3'", fontSize: 14, color: "#78350f", marginBottom: 18, lineHeight: 1.6 }}>
-            Here are the best ways to turn this cheatsheet into a shareable, live page your network can access:
+          <p style={{
+            fontFamily: "'Source Sans 3', sans-serif",
+            fontSize: 14,
+            color: 'var(--warm-muted)',
+            marginBottom: 24,
+            lineHeight: 1.6
+          }}>
+            Real-world test scenarios showing how MCP, CLI, and Test Runner work together step-by-step.
           </p>
-          <div className="publish-grid">
-            <div className="publish-option">
-              <div className="publish-name">🟢 GitHub Pages (Free)</div>
-              <div className="publish-desc">
-                Push the .jsx to a React repo, run <code>npm run build</code>, deploy to GitHub Pages. Share the <strong>github.io</strong> link on LinkedIn.
+
+          {workflows.map(workflow => (
+            <div key={workflow.id} className="workflow-card">
+              <div
+                className="workflow-header"
+                onClick={() => setExpandedWorkflow(
+                  expandedWorkflow === workflow.id ? null : workflow.id
+                )}
+              >
+                <div className="workflow-header-left">
+                  <span className="workflow-icon">{workflow.icon}</span>
+                  <div>
+                    <h3 className="workflow-title">{workflow.name}</h3>
+                    <p className="workflow-description">{workflow.description}</p>
+                  </div>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                  <span className="workflow-difficulty">{workflow.difficulty}</span>
+                  <span className={`workflow-expand-icon ${expandedWorkflow === workflow.id ? 'expanded' : ''}`}>
+                    ▼
+                  </span>
+                </div>
               </div>
-              <div className="publish-tag">git push → auto-deploy</div>
+
+              {expandedWorkflow === workflow.id && (
+                <div className="workflow-content">
+                  <div className="workflow-tabs">
+                    <button
+                      className={`workflow-tab ${getActiveTab(workflow.id) === 'mcp' ? 'active' : ''}`}
+                      onClick={() => setActiveTab(workflow.id, 'mcp')}
+                    >
+                      🤖 MCP Tools
+                    </button>
+                    <button
+                      className={`workflow-tab ${getActiveTab(workflow.id) === 'cli' ? 'active' : ''}`}
+                      onClick={() => setActiveTab(workflow.id, 'cli')}
+                    >
+                      ⚡ CLI Skills
+                    </button>
+                    <button
+                      className={`workflow-tab ${getActiveTab(workflow.id) === 'testRunner' ? 'active' : ''}`}
+                      onClick={() => setActiveTab(workflow.id, 'testRunner')}
+                    >
+                      🧪 Test Runner
+                    </button>
+                  </div>
+
+                  <div className="workflow-code-block">
+                    <div className="workflow-code-header">
+                      {workflow[getActiveTab(workflow.id)].description}
+                    </div>
+                    <SyntaxHighlighter
+                      language={getCodeLanguage(getActiveTab(workflow.id))}
+                      style={warmCodeTheme}
+                      customStyle={{
+                        background: 'linear-gradient(135deg, #fdfcfb 0%, #faf8f5 100%)',
+                        padding: '24px 28px',
+                        borderRadius: '12px',
+                        fontSize: '13.5px',
+                        lineHeight: '1.75',
+                        margin: 0,
+                        border: '1px solid #e8d5c0',
+                        boxShadow: 'inset 0 1px 3px rgba(139,111,71,0.08), 0 1px 2px rgba(139,111,71,0.05)',
+                        fontWeight: '400',
+                        letterSpacing: '0.01em'
+                      }}
+                      codeTagProps={{
+                        style: {
+                          fontFamily: "'IBM Plex Mono', 'Courier New', monospace",
+                          textShadow: '0 1px 1px rgba(255,255,255,0.8)',
+                          fontVariantLigatures: 'none'
+                        }
+                      }}
+                      showLineNumbers={false}
+                      wrapLines={true}
+                      wrapLongLines={true}
+                    >
+                      {workflow[getActiveTab(workflow.id)].code}
+                    </SyntaxHighlighter>
+                    <button
+                      className={`workflow-copy-btn ${copiedCode[workflow.id] ? 'copied' : ''}`}
+                      onClick={() => handleCopyCode(workflow.id, workflow[getActiveTab(workflow.id)].code)}
+                    >
+                      {copiedCode[workflow.id] ? '✓ Copied!' : '📋 Copy'}
+                    </button>
+                  </div>
+
+                  <div className="workflow-footer">
+                    <div className="workflow-result">
+                      <div className="workflow-label">✅ Expected Result</div>
+                      <div className="workflow-text">{workflow.expectedResult}</div>
+                    </div>
+                    <div className="workflow-tip">
+                      <div className="workflow-label">💡 Pro Tip</div>
+                      <div className="workflow-text">{workflow.proTip}</div>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
-            <div className="publish-option">
-              <div className="publish-name">▲ Vercel (Easiest)</div>
-              <div className="publish-desc">
-                Import your GitHub repo → Vercel auto-detects React → deploys in 30s. Get a clean <strong>yourname.vercel.app</strong> URL.
-              </div>
-              <div className="publish-tag">Zero config • Free tier</div>
-            </div>
-            <div className="publish-option">
-              <div className="publish-name">⚡ Netlify (Drop & Go)</div>
-              <div className="publish-desc">
-                Build locally, drag the <code>/dist</code> folder to netlify.com/drop. Instant URL, custom domain optional.
-              </div>
-              <div className="publish-tag">Drag & drop deploy</div>
-            </div>
-            <div className="publish-option">
-              <div className="publish-name">📦 CodeSandbox / StackBlitz</div>
-              <div className="publish-desc">
-                Paste this JSX into a sandbox → get a live URL instantly. Great for embedding in LinkedIn articles or blog posts.
-              </div>
-              <div className="publish-tag">Instant preview link</div>
-            </div>
-            <div className="publish-option">
-              <div className="publish-name">🔗 LinkedIn Publishing Tips</div>
-              <div className="publish-desc">
-                Share the deployed link with a carousel screenshot (use browser DevTools → screenshot). Add hashtags: <strong>#Playwright #MCP #QAAutomation #AI</strong>
-              </div>
-              <div className="publish-tag">#LinkedInStrategy</div>
-            </div>
-            <div className="publish-option">
-              <div className="publish-name">📄 Export as PDF</div>
-              <div className="publish-desc">
-                Open in browser → <code>Ctrl+P</code> → Save as PDF. Upload to LinkedIn as a document post for carousel-style engagement.
-              </div>
-              <div className="publish-tag">High engagement format</div>
-            </div>
-          </div>
+          ))}
         </div>
       </div>
 
