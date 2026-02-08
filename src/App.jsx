@@ -861,6 +861,10 @@ export default function PlaywrightWarmCheatsheet() {
           padding-bottom: 4px;
         }
 
+        .category-dropdown {
+          display: none; /* Hidden on desktop */
+        }
+
         .cat-chip {
           padding: 9px 18px;
           border-radius: 100px;
@@ -1732,6 +1736,45 @@ export default function PlaywrightWarmCheatsheet() {
             padding: 3px 8px;
           }
 
+          /* Category Navigation - Mobile Dropdown */
+          .category-nav {
+            display: none; /* Hide chips on mobile */
+          }
+
+          .category-dropdown {
+            display: block; /* Show dropdown on mobile */
+            width: 100%;
+            padding: 14px 16px;
+            margin-bottom: 20px;
+            font-family: 'Source Sans 3', sans-serif;
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--warm-dark);
+            background: white;
+            border: 2px solid var(--warm-tan);
+            border-radius: 12px;
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%238b6f47' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            background-size: 20px;
+            padding-right: 45px;
+            box-shadow: 0 2px 8px rgba(139,111,71,0.08);
+            transition: all 0.2s ease;
+          }
+
+          .category-dropdown:focus {
+            outline: none;
+            border-color: var(--warm-brown);
+            box-shadow: 0 4px 12px rgba(139,111,71,0.15);
+          }
+
+          .category-dropdown option {
+            padding: 12px;
+            font-size: 15px;
+          }
+
           /* Mobile Table Redesign - Card Layout */
           .table-wrapper {
             border: none;
@@ -1810,11 +1853,36 @@ export default function PlaywrightWarmCheatsheet() {
           .tag-cli,
           .tag-test,
           .tag-na {
-            font-size: 12px !important;
-            padding: 6px 12px !important;
+            font-size: 12.5px !important;
+            padding: 8px 12px !important;
             flex: 1;
-            text-align: right;
+            text-align: left;
             word-break: break-word;
+            line-height: 1.5;
+            display: block;
+            min-height: 38px;
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+          }
+
+          /* Improve tag visual hierarchy */
+          .tag-mcp {
+            background: linear-gradient(135deg, #eef2ff, #ddd6fe) !important;
+            border-color: #c7d2fe !important;
+            font-weight: 600 !important;
+          }
+
+          .tag-cli {
+            background: linear-gradient(135deg, #ecfdf5, #d1fae5) !important;
+            border-color: #a7f3d0 !important;
+            font-weight: 600 !important;
+          }
+
+          .tag-test {
+            background: linear-gradient(135deg, #fffbeb, #fef3c7) !important;
+            border-color: #fde68a !important;
+            font-weight: 600 !important;
           }
 
           /* Comparison table mobile */
@@ -1992,6 +2060,22 @@ export default function PlaywrightWarmCheatsheet() {
             font-size: 14px;
             padding: 0 0 8px 0;
           }
+
+          /* Category dropdown for small screens */
+          .category-dropdown {
+            padding: 12px 14px;
+            font-size: 14px;
+            margin-bottom: 18px;
+          }
+
+          /* Command tags for small screens */
+          .tag-mcp,
+          .tag-cli,
+          .tag-test {
+            font-size: 11.5px !important;
+            padding: 7px 10px !important;
+            min-height: 36px;
+          }
         }
       `}</style>
 
@@ -2078,17 +2162,34 @@ export default function PlaywrightWarmCheatsheet() {
 
         {/* CATEGORY CHIPS */}
         {view === "category" && !search && (
-          <div className="category-nav" style={{ animation: loaded ? "slideReveal 0.7s ease-out 0.3s both" : "none" }}>
-            {categories.map((c, i) => (
-              <button
-                key={i}
-                className={`cat-chip ${activeCat === i ? "active" : ""}`}
-                onClick={() => setActiveCat(i)}
-              >
-                {c.icon} {c.name}
-              </button>
-            ))}
-          </div>
+          <>
+            {/* Desktop: Horizontal chips */}
+            <div className="category-nav" style={{ animation: loaded ? "slideReveal 0.7s ease-out 0.3s both" : "none" }}>
+              {categories.map((c, i) => (
+                <button
+                  key={i}
+                  className={`cat-chip ${activeCat === i ? "active" : ""}`}
+                  onClick={() => setActiveCat(i)}
+                >
+                  {c.icon} {c.name}
+                </button>
+              ))}
+            </div>
+
+            {/* Mobile: Dropdown */}
+            <select
+              className="category-dropdown"
+              value={activeCat}
+              onChange={(e) => setActiveCat(Number(e.target.value))}
+              style={{ animation: loaded ? "slideReveal 0.7s ease-out 0.3s both" : "none" }}
+            >
+              {categories.map((c, i) => (
+                <option key={i} value={i}>
+                  {c.icon} {c.name}
+                </option>
+              ))}
+            </select>
+          </>
         )}
 
         {/* TABLES */}
