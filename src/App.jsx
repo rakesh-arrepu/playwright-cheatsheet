@@ -1700,6 +1700,99 @@ export default function PlaywrightWarmCheatsheet() {
             </div>
           </div>
         </div>
+
+        {/* WORKFLOWS SECTION */}
+        <div className="workflows-section">
+          <div className="section-heading">
+            <span>💼</span> Complete Workflow Examples
+            <span className="section-count">{workflows.length}</span>
+          </div>
+          <p style={{
+            fontFamily: "'Source Sans 3', sans-serif",
+            fontSize: 14,
+            color: 'var(--warm-muted)',
+            marginBottom: 24,
+            lineHeight: 1.6
+          }}>
+            Real-world test scenarios showing how MCP, CLI, and Test Runner work together step-by-step.
+          </p>
+
+          {workflows.map(workflow => (
+            <div key={workflow.id} className="workflow-card">
+              <div
+                className="workflow-header"
+                onClick={() => setExpandedWorkflow(
+                  expandedWorkflow === workflow.id ? null : workflow.id
+                )}
+              >
+                <div className="workflow-header-left">
+                  <span className="workflow-icon">{workflow.icon}</span>
+                  <div>
+                    <h3 className="workflow-title">{workflow.name}</h3>
+                    <p className="workflow-description">{workflow.description}</p>
+                  </div>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                  <span className="workflow-difficulty">{workflow.difficulty}</span>
+                  <span className={`workflow-expand-icon ${expandedWorkflow === workflow.id ? 'expanded' : ''}`}>
+                    ▼
+                  </span>
+                </div>
+              </div>
+
+              {expandedWorkflow === workflow.id && (
+                <div className="workflow-content">
+                  <div className="workflow-tabs">
+                    <button
+                      className={`workflow-tab ${getActiveTab(workflow.id) === 'mcp' ? 'active' : ''}`}
+                      onClick={() => setActiveTab(workflow.id, 'mcp')}
+                    >
+                      🤖 MCP Tools
+                    </button>
+                    <button
+                      className={`workflow-tab ${getActiveTab(workflow.id) === 'cli' ? 'active' : ''}`}
+                      onClick={() => setActiveTab(workflow.id, 'cli')}
+                    >
+                      ⚡ CLI Skills
+                    </button>
+                    <button
+                      className={`workflow-tab ${getActiveTab(workflow.id) === 'testRunner' ? 'active' : ''}`}
+                      onClick={() => setActiveTab(workflow.id, 'testRunner')}
+                    >
+                      🧪 Test Runner
+                    </button>
+                  </div>
+
+                  <div className="workflow-code-block">
+                    <div className="workflow-code-header">
+                      {workflow[getActiveTab(workflow.id)].description}
+                    </div>
+                    <pre className="workflow-code">
+                      {workflow[getActiveTab(workflow.id)].code}
+                    </pre>
+                    <button
+                      className={`workflow-copy-btn ${copiedCode[workflow.id] ? 'copied' : ''}`}
+                      onClick={() => handleCopyCode(workflow.id, workflow[getActiveTab(workflow.id)].code)}
+                    >
+                      {copiedCode[workflow.id] ? '✓ Copied!' : '📋 Copy'}
+                    </button>
+                  </div>
+
+                  <div className="workflow-footer">
+                    <div className="workflow-result">
+                      <div className="workflow-label">✅ Expected Result</div>
+                      <div className="workflow-text">{workflow.expectedResult}</div>
+                    </div>
+                    <div className="workflow-tip">
+                      <div className="workflow-label">💡 Pro Tip</div>
+                      <div className="workflow-text">{workflow.proTip}</div>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
       </div>
 
       {/* FOOTER */}
