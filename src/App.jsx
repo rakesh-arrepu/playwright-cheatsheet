@@ -1,4 +1,6 @@
 import { useState, useEffect, useRef } from "react";
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+import { atomDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
 
 const categories = [
   {
@@ -199,7 +201,12 @@ test('login authentication flow', async ({ page }) => {
 });`
     },
     expectedResult: "User successfully logs in and lands on dashboard with welcome message visible",
-    proTip: "MCP excels when field labels change (uses AI understanding). CLI is fastest for stable UIs. Test Runner is most reliable for regression suites."
+    proTip: "MCP excels when field labels change (uses AI understanding). CLI is fastest for stable UIs. Test Runner is most reliable for regression suites.",
+    demo: {
+      type: "gif",
+      url: "https://via.placeholder.com/600x400/f5e6d3/8b6f47?text=Login+Flow+Demo",
+      caption: "Watch the complete login flow in action"
+    }
   },
   {
     id: "form-validation",
@@ -318,7 +325,12 @@ test('form validation flow', async ({ page }) => {
 });`
     },
     expectedResult: "Form correctly shows validation errors for invalid inputs, then successfully submits when all fields are valid",
-    proTip: "MCP is best for exploratory testing of validation logic. Test Runner provides explicit assertions that serve as living documentation."
+    proTip: "MCP is best for exploratory testing of validation logic. Test Runner provides explicit assertions that serve as living documentation.",
+    demo: {
+      type: "gif",
+      url: "https://via.placeholder.com/600x400/fef3c7/78350f?text=Form+Validation+Demo",
+      caption: "See validation errors and success states"
+    }
   },
   {
     id: "ecommerce-search",
@@ -453,7 +465,12 @@ test('e-commerce product search flow', async ({ page }) => {
 });`
     },
     expectedResult: "Search returns relevant products, filters work correctly, sorting is accurate, and product page loads with all details",
-    proTip: "Use Test Runner for data validation (prices, ratings). MCP is great for visual verification. CLI is best for quick smoke tests."
+    proTip: "Use Test Runner for data validation (prices, ratings). MCP is great for visual verification. CLI is best for quick smoke tests.",
+    demo: {
+      type: "video",
+      url: "https://via.placeholder.com/600x400/d1fae5/065f46?text=E-commerce+Search+Demo",
+      caption: "Product search, filtering, and navigation walkthrough"
+    }
   }
 ];
 
@@ -516,6 +533,12 @@ export default function PlaywrightWarmCheatsheet() {
   const getActiveTab = (workflowId) => workflowTab[workflowId] || 'mcp';
   const setActiveTab = (workflowId, tab) => {
     setWorkflowTab(prev => ({ ...prev, [workflowId]: tab }));
+  };
+
+  const getCodeLanguage = (tab) => {
+    if (tab === 'testRunner') return 'javascript';
+    if (tab === 'cli') return 'bash';
+    return 'javascript'; // MCP uses JavaScript-like syntax
   };
 
   return (
@@ -1350,6 +1373,76 @@ export default function PlaywrightWarmCheatsheet() {
           50% { transform: scale(1.05); }
         }
 
+        .workflow-demo-section {
+          margin: 24px 0;
+          padding: 20px;
+          background: linear-gradient(135deg,
+            rgba(250,240,228,0.3),
+            rgba(255,255,255,0.5)
+          );
+          border: 2px dashed var(--warm-tan);
+          border-radius: 14px;
+          transition: all 0.3s;
+        }
+
+        .workflow-demo-section:hover {
+          border-color: var(--warm-brown);
+          box-shadow: 0 4px 16px rgba(139,111,71,0.1);
+        }
+
+        .workflow-demo-header {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          margin-bottom: 16px;
+          padding-bottom: 12px;
+          border-bottom: 2px solid var(--warm-tan);
+        }
+
+        .workflow-demo-icon {
+          font-size: 24px;
+          filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
+        }
+
+        .workflow-demo-title {
+          font-family: 'Playfair Display', serif;
+          font-size: 18px;
+          font-weight: 700;
+          color: var(--warm-dark);
+          letter-spacing: -0.3px;
+        }
+
+        .workflow-demo-container {
+          position: relative;
+        }
+
+        .workflow-demo-media {
+          display: block;
+          width: 100%;
+          max-height: 400px;
+          border-radius: 12px;
+          border: 2px solid var(--warm-tan);
+          box-shadow: 0 4px 12px rgba(139,111,71,0.15);
+          transition: all 0.3s;
+          object-fit: cover;
+          background: white;
+        }
+
+        .workflow-demo-media:hover {
+          transform: scale(1.01);
+          box-shadow: 0 8px 24px rgba(139,111,71,0.2);
+        }
+
+        .workflow-demo-caption {
+          font-family: 'Source Sans 3', sans-serif;
+          font-size: 13px;
+          color: var(--warm-muted);
+          font-style: italic;
+          text-align: center;
+          margin-top: 12px;
+          margin-bottom: 0;
+        }
+
         .workflow-footer {
           display: grid;
           grid-template-columns: 1fr 1fr;
@@ -1770,9 +1863,26 @@ export default function PlaywrightWarmCheatsheet() {
                     <div className="workflow-code-header">
                       {workflow[getActiveTab(workflow.id)].description}
                     </div>
-                    <pre className="workflow-code">
+                    <SyntaxHighlighter
+                      language={getCodeLanguage(getActiveTab(workflow.id))}
+                      style={atomDark}
+                      customStyle={{
+                        background: 'ghostwhite',
+                        padding: '20px',
+                        borderRadius: '8px',
+                        fontSize: '13px',
+                        lineHeight: '1.8',
+                        margin: 0
+                      }}
+                      codeTagProps={{
+                        style: {
+                          fontFamily: "'IBM Plex Mono', monospace",
+                          letterSpacing: '-0.2px'
+                        }
+                      }}
+                    >
                       {workflow[getActiveTab(workflow.id)].code}
-                    </pre>
+                    </SyntaxHighlighter>
                     <button
                       className={`workflow-copy-btn ${copiedCode[workflow.id] ? 'copied' : ''}`}
                       onClick={() => handleCopyCode(workflow.id, workflow[getActiveTab(workflow.id)].code)}
@@ -1780,6 +1890,36 @@ export default function PlaywrightWarmCheatsheet() {
                       {copiedCode[workflow.id] ? '✓ Copied!' : '📋 Copy'}
                     </button>
                   </div>
+
+                  {workflow.demo && (
+                    <div className="workflow-demo-section">
+                      <div className="workflow-demo-header">
+                        <span className="workflow-demo-icon">🎬</span>
+                        <span className="workflow-demo-title">Visual Demo</span>
+                      </div>
+                      <div className="workflow-demo-container">
+                        {workflow.demo.type === 'video' ? (
+                          <video
+                            className="workflow-demo-media"
+                            controls
+                            poster={workflow.demo.url}
+                            style={{ width: '100%', maxHeight: '400px', borderRadius: '12px' }}
+                          >
+                            <source src={workflow.demo.url} type="video/mp4" />
+                            Your browser does not support the video tag.
+                          </video>
+                        ) : (
+                          <img
+                            className="workflow-demo-media"
+                            src={workflow.demo.url}
+                            alt={workflow.demo.caption}
+                            style={{ width: '100%', maxHeight: '400px', borderRadius: '12px', objectFit: 'cover' }}
+                          />
+                        )}
+                        <p className="workflow-demo-caption">{workflow.demo.caption}</p>
+                      </div>
+                    </div>
+                  )}
 
                   <div className="workflow-footer">
                     <div className="workflow-result">
