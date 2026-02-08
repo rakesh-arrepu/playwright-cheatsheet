@@ -1,0 +1,1121 @@
+import { useState, useEffect, useRef } from "react";
+
+const categories = [
+  {
+    name: "Navigation",
+    icon: "🧭",
+    color: "#b45309",
+    accent: "#fef3c7",
+    tip: "MCP uses browser_navigate with accessibility snapshots; CLI keeps sessions alive for multi-step flows.",
+    commands: [
+      { action: "Open / Navigate URL", mcp: "browser_navigate", cli: "open <url>", test: "npx playwright test", hot: true },
+      { action: "Go Back", mcp: "browser_navigate_back", cli: "go-back", test: "—" },
+      { action: "Go Forward", mcp: "browser_navigate_forward", cli: "go-forward", test: "—" },
+      { action: "Reload Page", mcp: "—", cli: "reload", test: "—" },
+      { action: "Close Browser", mcp: "browser_close", cli: "close", test: "—" },
+    ],
+  },
+  {
+    name: "Interactions",
+    icon: "🖱️",
+    color: "#9f1239",
+    accent: "#ffe4e6",
+    tip: "MCP requires element ref + human-readable description for safety. CLI uses snapshot refs directly.",
+    commands: [
+      { action: "Click Element", mcp: "browser_click", cli: "click <ref>", test: "—", hot: true },
+      { action: "Double Click", mcp: "—", cli: "dblclick <ref>", test: "—" },
+      { action: "Type Text", mcp: "browser_type", cli: "type <text>", test: "—", hot: true },
+      { action: "Fill Input", mcp: "—", cli: "fill <ref> <text>", test: "—" },
+      { action: "Hover Element", mcp: "browser_hover", cli: "hover <ref>", test: "—" },
+      { action: "Drag & Drop", mcp: "browser_drag", cli: "drag <start> <end>", test: "—" },
+      { action: "Select Option", mcp: "browser_select_option", cli: "select <ref> <val>", test: "—" },
+      { action: "Check / Uncheck", mcp: "—", cli: "check / uncheck <ref>", test: "—" },
+      { action: "Press Key", mcp: "browser_press_key", cli: "press <key>", test: "—", hot: true },
+    ],
+  },
+  {
+    name: "Capture & Snapshot",
+    icon: "📸",
+    color: "#1e40af",
+    accent: "#dbeafe",
+    tip: "browser_snapshot is THE workhorse of MCP — it returns structured accessibility trees, not pixels.",
+    commands: [
+      { action: "Page Snapshot", mcp: "browser_snapshot", cli: "snapshot", test: "—", hot: true },
+      { action: "Take Screenshot", mcp: "browser_take_screenshot", cli: "screenshot [ref]", test: "--screenshot", hot: true },
+      { action: "Save as PDF", mcp: "browser_pdf_save", cli: "pdf", test: "npx playwright pdf <url>" },
+      { action: "Resize Viewport", mcp: "browser_resize", cli: "resize <w> <h>", test: "--viewport-size=WxH" },
+    ],
+  },
+  {
+    name: "Tab Management",
+    icon: "📑",
+    color: "#065f46",
+    accent: "#d1fae5",
+    tip: "Multi-tab orchestration is key for comparing pages, A/B testing, or parallel form filling workflows.",
+    commands: [
+      { action: "List Tabs", mcp: "browser_tab_list", cli: "tab-list", test: "—" },
+      { action: "New Tab", mcp: "browser_tab_new", cli: "tab-new [url]", test: "—" },
+      { action: "Select Tab", mcp: "browser_tab_select", cli: "tab-select <idx>", test: "—" },
+      { action: "Close Tab", mcp: "browser_tab_close", cli: "tab-close [idx]", test: "—" },
+    ],
+  },
+  {
+    name: "DevTools & Debug",
+    icon: "🛠️",
+    color: "#7c2d12",
+    accent: "#fed7aa",
+    tip: "Console & network tools in MCP help AI agents self-diagnose failures without human intervention.",
+    commands: [
+      { action: "Console Messages", mcp: "browser_console_messages", cli: "console [level]", test: "—", hot: true },
+      { action: "Network Requests", mcp: "browser_network_requests", cli: "network", test: "—", hot: true },
+      { action: "Handle Dialog", mcp: "browser_handle_dialog", cli: "dialog-accept / dismiss", test: "—" },
+      { action: "File Upload", mcp: "browser_file_upload", cli: "upload <file>", test: "—" },
+      { action: "Run JS / Eval", mcp: "—", cli: "eval <func> [ref]", test: "—" },
+      { action: "Run Code Snippet", mcp: "—", cli: "run-code <code>", test: "—" },
+    ],
+  },
+  {
+    name: "Testing & Codegen",
+    icon: "🧪",
+    color: "#6b21a8",
+    accent: "#f3e8ff",
+    tip: "MCP generates tests from live browser state. Test Runner is the gold standard for CI/CD pipelines.",
+    commands: [
+      { action: "Generate Test", mcp: "browser_generate_playwright_test", cli: "—", test: "npx playwright codegen", hot: true },
+      { action: "Run All Tests", mcp: "—", cli: "—", test: "npx playwright test", hot: true },
+      { action: "Run Headed", mcp: "—", cli: "open <url> --headed", test: "npx playwright test --headed" },
+      { action: "Debug Mode", mcp: "—", cli: "—", test: "npx playwright test --debug" },
+      { action: "UI Mode", mcp: "—", cli: "—", test: "npx playwright test --ui", hot: true },
+      { action: "Show Report", mcp: "—", cli: "—", test: "npx playwright show-report", hot: true },
+      { action: "Show Trace", mcp: "—", cli: "tracing-start / stop", test: "npx playwright show-trace" },
+      { action: "Wait For", mcp: "browser_wait_for", cli: "—", test: "—" },
+      { action: "Install Browsers", mcp: "browser_install", cli: "—", test: "npx playwright install" },
+    ],
+  },
+  {
+    name: "Sessions (CLI)",
+    icon: "🔧",
+    color: "#475569",
+    accent: "#e2e8f0",
+    tip: "CLI sessions persist cookies & state between calls — perfect for multi-step agent workflows.",
+    commands: [
+      { action: "List Sessions", mcp: "—", cli: "session-list", test: "—" },
+      { action: "Stop Session", mcp: "—", cli: "session-stop [name]", test: "—" },
+      { action: "Stop All Sessions", mcp: "—", cli: "session-stop-all", test: "—" },
+      { action: "Delete Session", mcp: "—", cli: "session-delete [name]", test: "—" },
+    ],
+  },
+  {
+    name: "Mouse & Keys (CLI)",
+    icon: "🖲️",
+    color: "#374151",
+    accent: "#f3f4f6",
+    tip: "Fine-grained mouse/keyboard control is CLI-only — great for canvas apps, games, or drag interactions.",
+    commands: [
+      { action: "Mouse Move", mcp: "—", cli: "mousemove <x> <y>", test: "—" },
+      { action: "Mouse Down / Up", mcp: "—", cli: "mousedown / mouseup", test: "—" },
+      { action: "Mouse Wheel", mcp: "—", cli: "mousewheel <dx> <dy>", test: "—" },
+      { action: "Key Down / Up", mcp: "—", cli: "keydown / keyup <key>", test: "—" },
+    ],
+  },
+];
+
+const comparisonData = [
+  { aspect: "Token Efficiency", mcp: "Heavy — loads full tool schemas + snapshots", cli: "Lightweight — concise commands, minimal context", winner: "cli" },
+  { aspect: "State Management", mcp: "Persistent browser context per MCP session", cli: "Named sessions with cookie/storage persistence", winner: "tie" },
+  { aspect: "Best For", mcp: "Exploratory testing, self-healing, autonomous agents", cli: "High-throughput coding agents, CI pipelines", winner: "tie" },
+  { aspect: "Setup Complexity", mcp: "Single JSON config in any MCP client", cli: "npm install + skill registration", winner: "mcp" },
+  { aspect: "AI Agent Support", mcp: "Claude Desktop, Cursor, VS Code, Copilot", cli: "Claude Code, Copilot CLI, any terminal agent", winner: "tie" },
+  { aspect: "Vision/Screenshot", mcp: "Optional (--caps=vision)", cli: "Built-in screenshot command", winner: "tie" },
+];
+
+function AnimatedNumber({ end, suffix = "" }) {
+  const [val, setVal] = useState(0);
+  useEffect(() => {
+    let n = 0;
+    const step = Math.max(1, Math.ceil(end / 40));
+    const id = setInterval(() => {
+      n = Math.min(n + step, end);
+      setVal(n);
+      if (n >= end) clearInterval(id);
+    }, 25);
+    return () => clearInterval(id);
+  }, [end]);
+  return <>{val}{suffix}</>;
+}
+
+export default function PlaywrightWarmCheatsheet() {
+  const [activeCat, setActiveCat] = useState(0);
+  const [search, setSearch] = useState("");
+  const [view, setView] = useState("category");
+  const [loaded, setLoaded] = useState(false);
+  const [showComparison, setShowComparison] = useState(false);
+
+  useEffect(() => { setTimeout(() => setLoaded(true), 80); }, []);
+
+  const totalMCP = categories.reduce((a, c) => a + c.commands.filter(x => x.mcp !== "—").length, 0);
+  const totalCLI = categories.reduce((a, c) => a + c.commands.filter(x => x.cli !== "—").length, 0);
+  const totalTest = categories.reduce((a, c) => a + c.commands.filter(x => x.test !== "—").length, 0);
+
+  const filtered = search
+    ? categories.map(c => ({ ...c, commands: c.commands.filter(cmd =>
+        [cmd.action, cmd.mcp, cmd.cli, cmd.test].some(v => v.toLowerCase().includes(search.toLowerCase()))
+      ) })).filter(c => c.commands.length > 0)
+    : categories;
+
+  const displayCats = view === "all" || search ? filtered : [categories[activeCat]];
+
+  return (
+    <div style={{ minHeight: "100vh", background: "#fdf6ee", position: "relative", overflow: "hidden" }}>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,400;1,500&family=Source+Sans+3:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+
+        :root {
+          --warm-bg: #fdf6ee;
+          --warm-cream: #faf0e4;
+          --warm-sand: #f5e6d3;
+          --warm-tan: #e8d5c0;
+          --warm-brown: #8b6f47;
+          --warm-dark: #3d2b1f;
+          --warm-text: #4a3728;
+          --warm-muted: #8a7565;
+          --accent-terracotta: #c2410c;
+          --accent-sage: #3f6212;
+          --accent-navy: #1e3a5f;
+          --accent-plum: #6b21a8;
+          --accent-gold: #a16207;
+        }
+
+        * { box-sizing: border-box; }
+
+        @keyframes gentleFloat {
+          0%, 100% { transform: translateY(0px) rotate(0deg); }
+          50% { transform: translateY(-8px) rotate(1deg); }
+        }
+
+        @keyframes slideReveal {
+          0% { opacity: 0; transform: translateY(24px); }
+          100% { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes slideFromLeft {
+          0% { opacity: 0; transform: translateX(-30px); }
+          100% { opacity: 1; transform: translateX(0); }
+        }
+
+        @keyframes rowAppear {
+          0% { opacity: 0; transform: translateX(-12px); }
+          100% { opacity: 1; transform: translateX(0); }
+        }
+
+        @keyframes warmPulse {
+          0%, 100% { box-shadow: 0 2px 20px rgba(139,111,71,0.08); }
+          50% { box-shadow: 0 4px 30px rgba(139,111,71,0.15); }
+        }
+
+        @keyframes tagShine {
+          0% { background-position: -100% 0; }
+          100% { background-position: 200% 0; }
+        }
+
+        @keyframes borderDance {
+          0%, 100% { border-color: var(--warm-tan); }
+          50% { border-color: var(--accent-terracotta); }
+        }
+
+        @keyframes countUp {
+          0% { opacity: 0; transform: scale(0.8); }
+          100% { opacity: 1; transform: scale(1); }
+        }
+
+        .warm-container {
+          max-width: 1200px;
+          margin: 0 auto;
+          padding: 0 28px;
+        }
+
+        .editorial-header {
+          text-align: center;
+          padding: 52px 28px 36px;
+          position: relative;
+        }
+
+        .masthead-line {
+          width: 60px;
+          height: 3px;
+          background: linear-gradient(90deg, var(--accent-terracotta), var(--accent-gold));
+          margin: 0 auto 20px;
+          border-radius: 2px;
+        }
+
+        .masthead-title {
+          font-family: 'Playfair Display', Georgia, serif;
+          font-size: 42px;
+          font-weight: 800;
+          color: var(--warm-dark);
+          letter-spacing: -1px;
+          line-height: 1.15;
+          margin: 0 0 6px;
+        }
+
+        .masthead-subtitle {
+          font-family: 'Playfair Display', serif;
+          font-size: 18px;
+          font-weight: 400;
+          font-style: italic;
+          color: var(--warm-muted);
+          margin: 0 0 16px;
+        }
+
+        .masthead-meta {
+          font-family: 'Source Sans 3', sans-serif;
+          font-size: 12px;
+          color: var(--warm-brown);
+          text-transform: uppercase;
+          letter-spacing: 2.5px;
+          font-weight: 600;
+        }
+
+        .divider-ornament {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 12px;
+          margin: 8px 0 28px;
+          color: var(--warm-tan);
+          font-size: 14px;
+        }
+
+        .divider-ornament::before,
+        .divider-ornament::after {
+          content: '';
+          height: 1px;
+          width: 80px;
+          background: linear-gradient(90deg, transparent, var(--warm-tan), transparent);
+        }
+
+        .stat-row {
+          display: grid;
+          grid-template-columns: repeat(4, 1fr);
+          gap: 14px;
+          margin-bottom: 28px;
+        }
+
+        .stat-box {
+          background: white;
+          border: 1px solid var(--warm-tan);
+          border-radius: 14px;
+          padding: 20px;
+          text-align: center;
+          transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+          position: relative;
+          overflow: hidden;
+        }
+
+        .stat-box::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          height: 3px;
+          border-radius: 14px 14px 0 0;
+        }
+
+        .stat-box:hover {
+          transform: translateY(-3px);
+          box-shadow: 0 8px 28px rgba(139,111,71,0.12);
+          border-color: var(--warm-brown);
+        }
+
+        .stat-number {
+          font-family: 'Playfair Display', serif;
+          font-size: 36px;
+          font-weight: 800;
+          line-height: 1;
+        }
+
+        .stat-label {
+          font-family: 'Source Sans 3', sans-serif;
+          font-size: 11.5px;
+          font-weight: 600;
+          text-transform: uppercase;
+          letter-spacing: 1.5px;
+          margin-top: 6px;
+          color: var(--warm-muted);
+        }
+
+        .toolbar {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 16px;
+          margin-bottom: 20px;
+          flex-wrap: wrap;
+        }
+
+        .search-box {
+          position: relative;
+          flex: 1;
+          max-width: 340px;
+        }
+
+        .search-box input {
+          width: 100%;
+          padding: 11px 16px 11px 40px;
+          background: white;
+          border: 1.5px solid var(--warm-tan);
+          border-radius: 12px;
+          font-family: 'Source Sans 3', sans-serif;
+          font-size: 14px;
+          color: var(--warm-dark);
+          outline: none;
+          transition: all 0.3s;
+        }
+
+        .search-box input:focus {
+          border-color: var(--accent-terracotta);
+          box-shadow: 0 0 0 3px rgba(194,65,12,0.08);
+        }
+
+        .search-box input::placeholder { color: #b8a898; }
+
+        .search-icon {
+          position: absolute;
+          left: 14px;
+          top: 50%;
+          transform: translateY(-50%);
+          font-size: 15px;
+          opacity: 0.45;
+        }
+
+        .view-pills {
+          display: flex;
+          background: white;
+          border: 1.5px solid var(--warm-tan);
+          border-radius: 12px;
+          overflow: hidden;
+        }
+
+        .view-pill {
+          padding: 10px 18px;
+          font-family: 'Source Sans 3', sans-serif;
+          font-size: 13px;
+          font-weight: 600;
+          border: none;
+          background: transparent;
+          color: var(--warm-muted);
+          cursor: pointer;
+          transition: all 0.25s;
+          white-space: nowrap;
+        }
+
+        .view-pill.active {
+          background: var(--warm-dark);
+          color: var(--warm-cream);
+        }
+
+        .view-pill:not(.active):hover {
+          background: var(--warm-sand);
+        }
+
+        .category-nav {
+          display: flex;
+          gap: 6px;
+          margin-bottom: 22px;
+          overflow-x: auto;
+          padding-bottom: 4px;
+        }
+
+        .cat-chip {
+          padding: 9px 18px;
+          border-radius: 100px;
+          font-family: 'Source Sans 3', sans-serif;
+          font-size: 13.5px;
+          font-weight: 600;
+          border: 1.5px solid var(--warm-tan);
+          background: white;
+          color: var(--warm-muted);
+          cursor: pointer;
+          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+          white-space: nowrap;
+          position: relative;
+        }
+
+        .cat-chip:hover {
+          border-color: var(--warm-brown);
+          transform: translateY(-2px);
+          box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+        }
+
+        .cat-chip.active {
+          background: var(--warm-dark);
+          color: white;
+          border-color: var(--warm-dark);
+          box-shadow: 0 4px 16px rgba(61,43,31,0.2);
+        }
+
+        .pro-tip {
+          background: linear-gradient(135deg, #fffbeb, #fef3c7);
+          border: 1px solid #fbbf24;
+          border-left: 4px solid #d97706;
+          border-radius: 0 12px 12px 0;
+          padding: 14px 18px;
+          margin-bottom: 18px;
+          font-family: 'Source Sans 3', sans-serif;
+          font-size: 13.5px;
+          color: #78350f;
+          line-height: 1.5;
+          display: flex;
+          align-items: flex-start;
+          gap: 10px;
+        }
+
+        .pro-tip-icon {
+          font-size: 16px;
+          flex-shrink: 0;
+          margin-top: 1px;
+        }
+
+        .table-wrapper {
+          background: white;
+          border: 1.5px solid var(--warm-tan);
+          border-radius: 16px;
+          overflow: hidden;
+          margin-bottom: 28px;
+          animation: warmPulse 5s ease-in-out infinite;
+        }
+
+        .table-header {
+          display: grid;
+          grid-template-columns: 1.3fr 1.5fr 1.3fr 1.9fr;
+          padding: 14px 22px;
+          background: linear-gradient(135deg, var(--warm-sand), var(--warm-cream));
+          border-bottom: 1.5px solid var(--warm-tan);
+        }
+
+        .table-header-cell {
+          font-family: 'Source Sans 3', sans-serif;
+          font-size: 10.5px;
+          font-weight: 700;
+          text-transform: uppercase;
+          letter-spacing: 2px;
+        }
+
+        .table-row {
+          display: grid;
+          grid-template-columns: 1.3fr 1.5fr 1.3fr 1.9fr;
+          padding: 13px 22px;
+          border-bottom: 1px solid rgba(232,213,192,0.5);
+          align-items: center;
+          transition: all 0.2s;
+        }
+
+        .table-row:last-child { border-bottom: none; }
+
+        .table-row:hover {
+          background: linear-gradient(135deg, rgba(253,246,238,0.8), rgba(250,240,228,0.6));
+        }
+
+        .action-name {
+          font-family: 'Source Sans 3', sans-serif;
+          font-size: 14px;
+          font-weight: 600;
+          color: var(--warm-dark);
+          display: flex;
+          align-items: center;
+          gap: 6px;
+        }
+
+        .hot-dot {
+          width: 7px;
+          height: 7px;
+          border-radius: 50%;
+          background: #ef4444;
+          box-shadow: 0 0 6px rgba(239,68,68,0.4);
+          flex-shrink: 0;
+        }
+
+        .tag-mcp {
+          display: inline-block;
+          font-family: 'IBM Plex Mono', monospace;
+          font-size: 11.5px;
+          font-weight: 500;
+          background: linear-gradient(135deg, #eef2ff, #e0e7ff);
+          color: #3730a3;
+          padding: 4px 10px;
+          border-radius: 6px;
+          border: 1px solid #c7d2fe;
+          transition: all 0.25s;
+        }
+
+        .tag-mcp:hover {
+          border-color: #818cf8;
+          box-shadow: 0 2px 8px rgba(99,102,241,0.15);
+          transform: translateY(-1px);
+        }
+
+        .tag-cli {
+          display: inline-block;
+          font-family: 'IBM Plex Mono', monospace;
+          font-size: 11.5px;
+          font-weight: 500;
+          background: linear-gradient(135deg, #ecfdf5, #d1fae5);
+          color: #065f46;
+          padding: 4px 10px;
+          border-radius: 6px;
+          border: 1px solid #a7f3d0;
+          transition: all 0.25s;
+        }
+
+        .tag-cli:hover {
+          border-color: #34d399;
+          box-shadow: 0 2px 8px rgba(16,185,129,0.15);
+          transform: translateY(-1px);
+        }
+
+        .tag-test {
+          display: inline-block;
+          font-family: 'IBM Plex Mono', monospace;
+          font-size: 11.5px;
+          font-weight: 500;
+          background: linear-gradient(135deg, #fffbeb, #fef3c7);
+          color: #92400e;
+          padding: 4px 10px;
+          border-radius: 6px;
+          border: 1px solid #fcd34d;
+          transition: all 0.25s;
+        }
+
+        .tag-test:hover {
+          border-color: #f59e0b;
+          box-shadow: 0 2px 8px rgba(245,158,11,0.15);
+          transform: translateY(-1px);
+        }
+
+        .tag-na {
+          font-family: 'Source Sans 3', sans-serif;
+          font-size: 13px;
+          color: #c4b5a5;
+          font-style: italic;
+        }
+
+        .section-heading {
+          font-family: 'Playfair Display', serif;
+          font-size: 22px;
+          font-weight: 700;
+          color: var(--warm-dark);
+          margin: 36px 0 8px;
+          display: flex;
+          align-items: center;
+          gap: 10px;
+        }
+
+        .section-count {
+          font-family: 'Source Sans 3', sans-serif;
+          font-size: 11px;
+          font-weight: 600;
+          color: white;
+          background: var(--warm-brown);
+          padding: 2px 10px;
+          border-radius: 100px;
+          letter-spacing: 0.5px;
+        }
+
+        .comparison-toggle {
+          margin: 32px 0 20px;
+          text-align: center;
+        }
+
+        .comparison-btn {
+          font-family: 'Source Sans 3', sans-serif;
+          font-size: 14px;
+          font-weight: 700;
+          padding: 13px 32px;
+          border-radius: 100px;
+          border: 2px solid var(--warm-dark);
+          background: transparent;
+          color: var(--warm-dark);
+          cursor: pointer;
+          transition: all 0.3s;
+          letter-spacing: 0.5px;
+        }
+
+        .comparison-btn:hover {
+          background: var(--warm-dark);
+          color: white;
+          transform: translateY(-2px);
+          box-shadow: 0 6px 20px rgba(61,43,31,0.2);
+        }
+
+        .comparison-table {
+          background: white;
+          border: 1.5px solid var(--warm-tan);
+          border-radius: 16px;
+          overflow: hidden;
+          margin-bottom: 32px;
+        }
+
+        .comp-row {
+          display: grid;
+          grid-template-columns: 1.2fr 2fr 2fr 0.6fr;
+          padding: 14px 22px;
+          border-bottom: 1px solid rgba(232,213,192,0.5);
+          align-items: center;
+          transition: background 0.2s;
+        }
+
+        .comp-row:hover { background: var(--warm-cream); }
+        .comp-row:last-child { border-bottom: none; }
+
+        .winner-badge {
+          font-size: 10px;
+          font-weight: 700;
+          padding: 3px 8px;
+          border-radius: 100px;
+          text-transform: uppercase;
+          letter-spacing: 1px;
+          font-family: 'Source Sans 3', sans-serif;
+        }
+
+        .setup-grid {
+          display: grid;
+          grid-template-columns: repeat(3, 1fr);
+          gap: 16px;
+          margin-bottom: 32px;
+        }
+
+        .setup-card {
+          background: white;
+          border: 1.5px solid var(--warm-tan);
+          border-radius: 16px;
+          padding: 24px;
+          transition: all 0.35s;
+          position: relative;
+          overflow: hidden;
+        }
+
+        .setup-card::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          height: 4px;
+        }
+
+        .setup-card:hover {
+          transform: translateY(-4px);
+          box-shadow: 0 10px 32px rgba(139,111,71,0.12);
+        }
+
+        .setup-title {
+          font-family: 'Playfair Display', serif;
+          font-size: 16px;
+          font-weight: 700;
+          margin-bottom: 10px;
+        }
+
+        .setup-code {
+          font-family: 'IBM Plex Mono', monospace;
+          font-size: 11.5px;
+          padding: 10px 14px;
+          border-radius: 10px;
+          margin: 10px 0;
+          word-break: break-all;
+          line-height: 1.6;
+        }
+
+        .setup-desc {
+          font-family: 'Source Sans 3', sans-serif;
+          font-size: 13px;
+          color: var(--warm-muted);
+          line-height: 1.6;
+        }
+
+        .publish-section {
+          background: linear-gradient(135deg, #fefce8, #fef9c3);
+          border: 2px solid #facc15;
+          border-radius: 20px;
+          padding: 32px;
+          margin-bottom: 36px;
+        }
+
+        .publish-title {
+          font-family: 'Playfair Display', serif;
+          font-size: 22px;
+          font-weight: 800;
+          color: #713f12;
+          margin-bottom: 16px;
+          display: flex;
+          align-items: center;
+          gap: 10px;
+        }
+
+        .publish-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+          gap: 14px;
+        }
+
+        .publish-option {
+          background: white;
+          border: 1px solid #fde68a;
+          border-radius: 14px;
+          padding: 18px;
+          transition: all 0.3s;
+        }
+
+        .publish-option:hover {
+          transform: translateY(-3px);
+          box-shadow: 0 6px 20px rgba(161,98,7,0.1);
+          border-color: #f59e0b;
+        }
+
+        .publish-name {
+          font-family: 'Source Sans 3', sans-serif;
+          font-size: 14px;
+          font-weight: 700;
+          color: #78350f;
+          margin-bottom: 6px;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+        }
+
+        .publish-desc {
+          font-family: 'Source Sans 3', sans-serif;
+          font-size: 12.5px;
+          color: #92400e;
+          line-height: 1.55;
+        }
+
+        .publish-tag {
+          display: inline-block;
+          font-family: 'IBM Plex Mono', monospace;
+          font-size: 10.5px;
+          background: #fef3c7;
+          color: #92400e;
+          padding: 2px 8px;
+          border-radius: 4px;
+          margin-top: 6px;
+        }
+
+        .footer-bar {
+          text-align: center;
+          padding: 20px 28px 32px;
+          font-family: 'Source Sans 3', sans-serif;
+          font-size: 11.5px;
+          color: var(--warm-muted);
+          line-height: 1.7;
+        }
+
+        .footer-divider {
+          width: 40px;
+          height: 2px;
+          background: var(--warm-tan);
+          margin: 0 auto 12px;
+          border-radius: 2px;
+        }
+
+        .texture-dots {
+          position: fixed;
+          inset: 0;
+          background-image: radial-gradient(circle, rgba(139,111,71,0.04) 1px, transparent 1px);
+          background-size: 24px 24px;
+          pointer-events: none;
+          z-index: 0;
+        }
+
+        .floating-accent {
+          position: absolute;
+          border-radius: 50%;
+          filter: blur(50px);
+          opacity: 0.06;
+          pointer-events: none;
+          animation: gentleFloat 10s ease-in-out infinite;
+        }
+
+        @media (max-width: 768px) {
+          .stat-row { grid-template-columns: repeat(2, 1fr); }
+          .setup-grid { grid-template-columns: 1fr; }
+          .masthead-title { font-size: 30px; }
+          .table-header, .table-row { grid-template-columns: 1fr 1fr; gap: 8px; font-size: 12px; }
+          .comp-row { grid-template-columns: 1fr; gap: 6px; }
+        }
+      `}</style>
+
+      <div className="texture-dots" />
+      <div className="floating-accent" style={{ width: 300, height: 300, left: "-5%", top: "8%", background: "#c2410c" }} />
+      <div className="floating-accent" style={{ width: 250, height: 250, right: "-3%", top: "25%", background: "#3f6212", animationDelay: "3s" }} />
+      <div className="floating-accent" style={{ width: 200, height: 200, left: "40%", top: "55%", background: "#a16207", animationDelay: "6s" }} />
+
+      {/* HEADER */}
+      <header className="editorial-header" style={{
+        animation: loaded ? "slideReveal 0.7s ease-out" : "none",
+        opacity: loaded ? 1 : 0,
+      }}>
+        <div className="masthead-line" />
+        <div className="masthead-meta">The Definitive Reference · 2026 Edition</div>
+        <h1 className="masthead-title">Playwright Commands</h1>
+        <p className="masthead-subtitle">MCP Tools — CLI Skills — Test Runner, compared side-by-side</p>
+        <div className="divider-ornament">◆</div>
+
+        {/* Legend */}
+        <div style={{ display: "flex", justifyContent: "center", gap: 24, flexWrap: "wrap" }}>
+          {[
+            { label: "@playwright/mcp", color: "#4f46e5", bg: "#eef2ff" },
+            { label: "@playwright/cli", color: "#059669", bg: "#ecfdf5" },
+            { label: "npx playwright", color: "#d97706", bg: "#fffbeb" },
+          ].map((l, i) => (
+            <div key={i} style={{ display: "flex", alignItems: "center", gap: 7 }}>
+              <div style={{ width: 10, height: 10, borderRadius: 3, background: l.color }} />
+              <span style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 11.5, color: "#6b5b4b", fontWeight: 500 }}>
+                {l.label}
+              </span>
+            </div>
+          ))}
+          <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
+            <div className="hot-dot" />
+            <span style={{ fontFamily: "'Source Sans 3', sans-serif", fontSize: 11.5, color: "#6b5b4b" }}>
+              Most Used
+            </span>
+          </div>
+        </div>
+      </header>
+
+      <div className="warm-container" style={{ position: "relative", zIndex: 5 }}>
+
+        {/* STATS */}
+        <div className="stat-row" style={{
+          animation: loaded ? "slideReveal 0.7s ease-out 0.15s both" : "none",
+        }}>
+          {[
+            { n: totalMCP, label: "MCP Tools", color: "#4f46e5", border: "#c7d2fe" },
+            { n: totalCLI, label: "CLI Skills", color: "#059669", border: "#a7f3d0" },
+            { n: totalTest, label: "Test Runner", color: "#d97706", border: "#fcd34d" },
+            { n: categories.length, label: "Categories", color: "#c2410c", border: "#fed7aa" },
+          ].map((s, i) => (
+            <div className="stat-box" key={i} style={{ "--top-color": s.color }}>
+              <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 3, background: s.color, borderRadius: "14px 14px 0 0" }} />
+              <div className="stat-number" style={{ color: s.color }}>
+                <AnimatedNumber end={s.n} />
+              </div>
+              <div className="stat-label">{s.label}</div>
+            </div>
+          ))}
+        </div>
+
+        {/* TOOLBAR */}
+        <div className="toolbar" style={{ animation: loaded ? "slideReveal 0.7s ease-out 0.25s both" : "none" }}>
+          <div className="search-box">
+            <span className="search-icon">🔍</span>
+            <input
+              placeholder="Search any command…"
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+            />
+          </div>
+          <div className="view-pills">
+            <button className={`view-pill ${view === "category" ? "active" : ""}`} onClick={() => setView("category")}>
+              📂 Category
+            </button>
+            <button className={`view-pill ${view === "all" ? "active" : ""}`} onClick={() => setView("all")}>
+              📋 All
+            </button>
+          </div>
+        </div>
+
+        {/* CATEGORY CHIPS */}
+        {view === "category" && !search && (
+          <div className="category-nav" style={{ animation: loaded ? "slideReveal 0.7s ease-out 0.3s both" : "none" }}>
+            {categories.map((c, i) => (
+              <button
+                key={i}
+                className={`cat-chip ${activeCat === i ? "active" : ""}`}
+                onClick={() => setActiveCat(i)}
+              >
+                {c.icon} {c.name}
+              </button>
+            ))}
+          </div>
+        )}
+
+        {/* TABLES */}
+        <div style={{ animation: loaded ? "slideReveal 0.7s ease-out 0.35s both" : "none" }}>
+          {displayCats.map((cat, ci) => (
+            <div key={ci}>
+              {(view === "all" || search) && (
+                <div className="section-heading">
+                  <span>{cat.icon}</span> {cat.name}
+                  <span className="section-count">{cat.commands.length}</span>
+                </div>
+              )}
+
+              {/* Pro Tip */}
+              {!search && cat.tip && (
+                <div className="pro-tip" style={{ animation: `slideFromLeft 0.5s ease-out ${ci * 0.05}s both` }}>
+                  <span className="pro-tip-icon">💡</span>
+                  <span><strong>Pro Tip:</strong> {cat.tip}</span>
+                </div>
+              )}
+
+              <div className="table-wrapper">
+                <div className="table-header">
+                  <div className="table-header-cell" style={{ color: "#6b5b4b" }}>Action</div>
+                  <div className="table-header-cell" style={{ color: "#4f46e5" }}>MCP Tool</div>
+                  <div className="table-header-cell" style={{ color: "#059669" }}>CLI Skill</div>
+                  <div className="table-header-cell" style={{ color: "#d97706" }}>Test Runner</div>
+                </div>
+                {cat.commands.map((cmd, ri) => (
+                  <div className="table-row" key={ri} style={{
+                    animation: `rowAppear 0.35s ease-out ${ri * 0.04}s both`,
+                  }}>
+                    <div className="action-name">
+                      {cmd.hot && <div className="hot-dot" />}
+                      {cmd.action}
+                    </div>
+                    <div>{cmd.mcp !== "—" ? <span className="tag-mcp">{cmd.mcp}</span> : <span className="tag-na">—</span>}</div>
+                    <div>{cmd.cli !== "—" ? <span className="tag-cli">{cmd.cli}</span> : <span className="tag-na">—</span>}</div>
+                    <div>{cmd.test !== "—" ? <span className="tag-test">{cmd.test}</span> : <span className="tag-na">—</span>}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* COMPARISON */}
+        <div className="comparison-toggle">
+          <button className="comparison-btn" onClick={() => setShowComparison(!showComparison)}>
+            {showComparison ? "▲ Hide" : "▼ Show"} MCP vs CLI — Head-to-Head Comparison
+          </button>
+        </div>
+
+        {showComparison && (
+          <div className="comparison-table" style={{ animation: "slideReveal 0.5s ease-out" }}>
+            <div className="comp-row" style={{ background: "linear-gradient(135deg, var(--warm-sand), var(--warm-cream))", fontWeight: 700 }}>
+              <div style={{ fontFamily: "'Source Sans 3'", fontSize: 10.5, textTransform: "uppercase", letterSpacing: 2, color: "#6b5b4b" }}>Aspect</div>
+              <div style={{ fontFamily: "'Source Sans 3'", fontSize: 10.5, textTransform: "uppercase", letterSpacing: 2, color: "#4f46e5" }}>MCP Server</div>
+              <div style={{ fontFamily: "'Source Sans 3'", fontSize: 10.5, textTransform: "uppercase", letterSpacing: 2, color: "#059669" }}>CLI Skills</div>
+              <div style={{ fontFamily: "'Source Sans 3'", fontSize: 10.5, textTransform: "uppercase", letterSpacing: 2, color: "#6b5b4b" }}>Edge</div>
+            </div>
+            {comparisonData.map((row, i) => (
+              <div className="comp-row" key={i}>
+                <div style={{ fontFamily: "'Source Sans 3'", fontSize: 13.5, fontWeight: 700, color: "#3d2b1f" }}>{row.aspect}</div>
+                <div style={{ fontFamily: "'Source Sans 3'", fontSize: 12.5, color: "#4a3728", lineHeight: 1.5 }}>{row.mcp}</div>
+                <div style={{ fontFamily: "'Source Sans 3'", fontSize: 12.5, color: "#4a3728", lineHeight: 1.5 }}>{row.cli}</div>
+                <div>
+                  {row.winner === "mcp" && <span className="winner-badge" style={{ background: "#eef2ff", color: "#4f46e5" }}>MCP</span>}
+                  {row.winner === "cli" && <span className="winner-badge" style={{ background: "#ecfdf5", color: "#059669" }}>CLI</span>}
+                  {row.winner === "tie" && <span className="winner-badge" style={{ background: "#f5f5f4", color: "#78716c" }}>Tie</span>}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* SETUP CARDS */}
+        <div className="section-heading" style={{ marginTop: 10 }}>
+          <span>⚙️</span> Quick Setup
+        </div>
+        <div className="setup-grid">
+          <div className="setup-card">
+            <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 4, background: "#4f46e5", borderRadius: "16px 16px 0 0" }} />
+            <div className="setup-title" style={{ color: "#4f46e5" }}>🤖 MCP Server</div>
+            <div className="setup-code" style={{ background: "#eef2ff", color: "#3730a3", border: "1px solid #c7d2fe" }}>
+              npx @playwright/mcp@latest
+            </div>
+            <div className="setup-desc">
+              AI agents interact via structured accessibility snapshots. Best for exploratory automation, self-healing tests, and autonomous browser workflows.
+            </div>
+          </div>
+          <div className="setup-card">
+            <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 4, background: "#059669", borderRadius: "16px 16px 0 0" }} />
+            <div className="setup-title" style={{ color: "#059669" }}>⚡ CLI Skills</div>
+            <div className="setup-code" style={{ background: "#ecfdf5", color: "#065f46", border: "1px solid #a7f3d0" }}>
+              npm i -g @playwright/cli@latest
+            </div>
+            <div className="setup-desc">
+              Token-efficient CLI for coding agents. Avoids large tool schemas, uses concise commands. Supports named sessions with persistent state.
+            </div>
+          </div>
+          <div className="setup-card">
+            <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 4, background: "#d97706", borderRadius: "16px 16px 0 0" }} />
+            <div className="setup-title" style={{ color: "#d97706" }}>🧪 Test Runner</div>
+            <div className="setup-code" style={{ background: "#fffbeb", color: "#92400e", border: "1px solid #fcd34d" }}>
+              npm i -D @playwright/test
+            </div>
+            <div className="setup-desc">
+              The gold standard for CI/CD. Headed/headless execution, HTML reports, trace viewer, codegen, and UI mode for visual debugging.
+            </div>
+          </div>
+        </div>
+
+        {/* PUBLISH GUIDE */}
+        <div className="publish-section">
+          <div className="publish-title">
+            🚀 How to Publish & Share on LinkedIn
+          </div>
+          <p style={{ fontFamily: "'Source Sans 3'", fontSize: 14, color: "#78350f", marginBottom: 18, lineHeight: 1.6 }}>
+            Here are the best ways to turn this cheatsheet into a shareable, live page your network can access:
+          </p>
+          <div className="publish-grid">
+            <div className="publish-option">
+              <div className="publish-name">🟢 GitHub Pages (Free)</div>
+              <div className="publish-desc">
+                Push the .jsx to a React repo, run <code>npm run build</code>, deploy to GitHub Pages. Share the <strong>github.io</strong> link on LinkedIn.
+              </div>
+              <div className="publish-tag">git push → auto-deploy</div>
+            </div>
+            <div className="publish-option">
+              <div className="publish-name">▲ Vercel (Easiest)</div>
+              <div className="publish-desc">
+                Import your GitHub repo → Vercel auto-detects React → deploys in 30s. Get a clean <strong>yourname.vercel.app</strong> URL.
+              </div>
+              <div className="publish-tag">Zero config • Free tier</div>
+            </div>
+            <div className="publish-option">
+              <div className="publish-name">⚡ Netlify (Drop & Go)</div>
+              <div className="publish-desc">
+                Build locally, drag the <code>/dist</code> folder to netlify.com/drop. Instant URL, custom domain optional.
+              </div>
+              <div className="publish-tag">Drag & drop deploy</div>
+            </div>
+            <div className="publish-option">
+              <div className="publish-name">📦 CodeSandbox / StackBlitz</div>
+              <div className="publish-desc">
+                Paste this JSX into a sandbox → get a live URL instantly. Great for embedding in LinkedIn articles or blog posts.
+              </div>
+              <div className="publish-tag">Instant preview link</div>
+            </div>
+            <div className="publish-option">
+              <div className="publish-name">🔗 LinkedIn Publishing Tips</div>
+              <div className="publish-desc">
+                Share the deployed link with a carousel screenshot (use browser DevTools → screenshot). Add hashtags: <strong>#Playwright #MCP #QAAutomation #AI</strong>
+              </div>
+              <div className="publish-tag">#LinkedInStrategy</div>
+            </div>
+            <div className="publish-option">
+              <div className="publish-name">📄 Export as PDF</div>
+              <div className="publish-desc">
+                Open in browser → <code>Ctrl+P</code> → Save as PDF. Upload to LinkedIn as a document post for carousel-style engagement.
+              </div>
+              <div className="publish-tag">High engagement format</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* FOOTER */}
+      <footer className="footer-bar">
+        <div className="footer-divider" />
+        <strong>Crafted by Rocky</strong> · Senior QA Automation Engineer & Test Architect<br />
+        Sources: microsoft/playwright-mcp · microsoft/playwright-cli · playwright.dev<br />
+        <span style={{ fontSize: 10.5, color: "#b8a898" }}>
+          © 2026 · Built with ♥ for the QA Automation Community
+        </span>
+      </footer>
+    </div>
+  );
+}
