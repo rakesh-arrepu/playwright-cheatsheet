@@ -1,0 +1,102 @@
+<svg width="600" height="400" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <style>
+      @keyframes browserLoad {
+        0% { opacity: 0; transform: translateY(20px); }
+        20% { opacity: 1; transform: translateY(0); }
+        100% { opacity: 1; transform: translateY(0); }
+      }
+      @keyframes typeText {
+        0%, 30% { width: 0; }
+        50% { width: 100%; }
+        100% { width: 100%; }
+      }
+      @keyframes buttonClick {
+        0%, 55% { transform: scale(1); fill: #4f46e5; }
+        60% { transform: scale(0.95); fill: #3730a3; }
+        65% { transform: scale(1); fill: #4f46e5; }
+        100% { transform: scale(1); fill: #4f46e5; }
+      }
+      @keyframes showSuccess {
+        0%, 70% { opacity: 0; transform: scale(0.8); }
+        75% { opacity: 1; transform: scale(1.05); }
+        80% { transform: scale(1); }
+        100% { opacity: 1; transform: scale(1); }
+      }
+      @keyframes checkmark {
+        0%, 75% { stroke-dashoffset: 100; }
+        100% { stroke-dashoffset: 0; }
+      }
+    </style>
+  </defs>
+
+  <!-- Background -->
+  <rect width="600" height="400" fill="#fdf6ee"/>
+
+  <!-- Browser Window -->
+  <g style="animation: browserLoad 3s ease-out infinite;">
+    <rect x="50" y="40" width="500" height="320" rx="12" fill="#fff" stroke="#e8d5c0" stroke-width="3"/>
+    <!-- Browser chrome -->
+    <rect x="50" y="40" width="500" height="35" rx="12" fill="#f5e6d3"/>
+    <circle cx="70" cy="57" r="5" fill="#ef4444"/>
+    <circle cx="90" cy="57" r="5" fill="#f59e0b"/>
+    <circle cx="110" cy="57" r="5" fill="#22c55e"/>
+    <rect x="140" y="50" width="300" height="15" rx="7" fill="#fff"/>
+    <text x="150" y="61" font-family="monospace" font-size="10" fill="#8b6f47">example.com/login</text>
+  </g>
+
+  <!-- Login Form -->
+  <g transform="translate(150, 120)">
+    <text x="0" y="0" font-family="serif" font-size="24" font-weight="bold" fill="#3d2b1f">Sign In</text>
+
+    <!-- Email field -->
+    <rect x="0" y="25" width="300" height="35" rx="6" fill="#faf0e4" stroke="#e8d5c0" stroke-width="2"/>
+    <text x="10" y="48" font-family="sans-serif" font-size="12" fill="#8a7565">Email</text>
+    <!-- Typing animation -->
+    <rect x="10" y="30" width="0" height="2" fill="#4f46e5" style="animation: typeText 3s ease-in-out infinite;"/>
+    <text x="10" y="48" font-family="monospace" font-size="14" fill="#3d2b1f" style="animation: typeText 3s ease-in-out infinite;">user@example.com</text>
+
+    <!-- Password field -->
+    <rect x="0" y="75" width="300" height="35" rx="6" fill="#faf0e4" stroke="#e8d5c0" stroke-width="2"/>
+    <text x="10" y="98" font-family="sans-serif" font-size="12" fill="#8a7565">Password</text>
+    <text x="10" y="98" font-family="monospace" font-size="18" fill="#3d2b1f" style="animation: typeText 3s ease-in-out 0.5s infinite;">••••••••</text>
+
+    <!-- Login Button -->
+    <rect x="0" y="130" width="300" height="45" rx="8" style="animation: buttonClick 3s ease-in-out infinite;"/>
+    <text x="150" y="158" font-family="sans-serif" font-size="16" font-weight="bold" fill="#fff" text-anchor="middle">Login</text>
+  </g>
+
+  <!-- Success State -->
+  <g style="animation: showSuccess 3s ease-out infinite;">
+    <circle cx="300" cy="240" r="40" fill="#22c55e" opacity="0.2"/>
+    <circle cx="300" cy="240" r="30" fill="#22c55e"/>
+    <path d="M 285 240 L 295 250 L 315 230" stroke="#fff" stroke-width="4" fill="none"
+          stroke-linecap="round" stroke-linejoin="round"
+          stroke-dasharray="100" stroke-dashoffset="100"
+          style="animation: checkmark 3s ease-out infinite;"/>
+    <text x="300" y="295" font-family="sans-serif" font-size="14" font-weight="600" fill="#065f46" text-anchor="middle">Welcome back!</text>
+  </g>
+
+  <!-- Step indicators -->
+  <g transform="translate(50, 375)">
+    <circle cx="0" cy="0" r="4" fill="#4f46e5" opacity="0.9">
+      <animate attributeName="opacity" values="0.3;0.9;0.3" dur="3s" repeatCount="indefinite"/>
+    </circle>
+    <text x="10" y="4" font-family="sans-serif" font-size="11" fill="#6b5b4b">1. Navigate</text>
+
+    <circle cx="110" cy="0" r="4" fill="#059669" opacity="0.3">
+      <animate attributeName="opacity" values="0.3;0.9;0.3" dur="3s" begin="0.5s" repeatCount="indefinite"/>
+    </circle>
+    <text x="120" y="4" font-family="sans-serif" font-size="11" fill="#6b5b4b">2. Fill Form</text>
+
+    <circle cx="220" cy="0" r="4" fill="#d97706" opacity="0.3">
+      <animate attributeName="opacity" values="0.3;0.9;0.3" dur="3s" begin="1s" repeatCount="indefinite"/>
+    </circle>
+    <text x="230" y="4" font-family="sans-serif" font-size="11" fill="#6b5b4b">3. Submit</text>
+
+    <circle cx="320" cy="0" r="4" fill="#22c55e" opacity="0.3">
+      <animate attributeName="opacity" values="0.3;0.9;0.3" dur="3s" begin="1.5s" repeatCount="indefinite"/>
+    </circle>
+    <text x="330" y="4" font-family="sans-serif" font-size="11" fill="#6b5b4b">4. Success</text>
+  </g>
+</svg>

@@ -203,9 +203,9 @@ test('login authentication flow', async ({ page }) => {
     expectedResult: "User successfully logs in and lands on dashboard with welcome message visible",
     proTip: "MCP excels when field labels change (uses AI understanding). CLI is fastest for stable UIs. Test Runner is most reliable for regression suites.",
     demo: {
-      type: "gif",
-      url: "https://via.placeholder.com/600x400/f5e6d3/8b6f47?text=Login+Flow+Demo",
-      caption: "Watch the complete login flow in action"
+      type: "image",
+      url: "/demos/login-flow.svg",
+      caption: "Animated demonstration of the complete login authentication flow"
     }
   },
   {
@@ -327,9 +327,9 @@ test('form validation flow', async ({ page }) => {
     expectedResult: "Form correctly shows validation errors for invalid inputs, then successfully submits when all fields are valid",
     proTip: "MCP is best for exploratory testing of validation logic. Test Runner provides explicit assertions that serve as living documentation.",
     demo: {
-      type: "gif",
-      url: "https://via.placeholder.com/600x400/fef3c7/78350f?text=Form+Validation+Demo",
-      caption: "See validation errors and success states"
+      type: "image",
+      url: "/demos/form-validation.svg",
+      caption: "Animated demonstration showing invalid input, error messages, correction, and successful submission"
     }
   },
   {
@@ -467,9 +467,9 @@ test('e-commerce product search flow', async ({ page }) => {
     expectedResult: "Search returns relevant products, filters work correctly, sorting is accurate, and product page loads with all details",
     proTip: "Use Test Runner for data validation (prices, ratings). MCP is great for visual verification. CLI is best for quick smoke tests.",
     demo: {
-      type: "video",
-      url: "https://via.placeholder.com/600x400/d1fae5/065f46?text=E-commerce+Search+Demo",
-      caption: "Product search, filtering, and navigation walkthrough"
+      type: "image",
+      url: "/demos/ecommerce-search.svg",
+      caption: "Animated demonstration of product search, price filtering, rating sort, and add-to-cart workflow"
     }
   }
 ];
