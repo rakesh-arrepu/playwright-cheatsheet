@@ -1070,6 +1070,370 @@ export default function PlaywrightWarmCheatsheet() {
           line-height: 1.6;
         }
 
+        /* Workflow Examples Section */
+        .workflows-section {
+          margin-top: 56px;
+          margin-bottom: 48px;
+        }
+
+        .workflow-card {
+          background: white;
+          border: 2px solid var(--warm-tan);
+          border-radius: 18px;
+          margin-bottom: 24px;
+          overflow: hidden;
+          transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+          position: relative;
+        }
+
+        .workflow-card::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          height: 5px;
+          background: linear-gradient(90deg,
+            var(--accent-terracotta),
+            var(--accent-gold),
+            var(--accent-sage),
+            var(--accent-plum)
+          );
+          opacity: 0;
+          transition: opacity 0.4s;
+        }
+
+        .workflow-card:hover {
+          box-shadow: 0 12px 40px rgba(139,111,71,0.15),
+                      0 4px 12px rgba(139,111,71,0.08);
+          transform: translateY(-2px);
+          border-color: var(--warm-brown);
+        }
+
+        .workflow-card:hover::before {
+          opacity: 1;
+        }
+
+        .workflow-header {
+          padding: 24px 28px;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          background: linear-gradient(135deg,
+            rgba(250,240,228,0.5),
+            rgba(255,255,255,0.8)
+          );
+          border-bottom: 2px solid var(--warm-tan);
+          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+          position: relative;
+        }
+
+        .workflow-header:hover {
+          background: linear-gradient(135deg,
+            var(--warm-sand),
+            var(--warm-cream)
+          );
+        }
+
+        .workflow-header-left {
+          display: flex;
+          align-items: center;
+          gap: 16px;
+          flex: 1;
+        }
+
+        .workflow-icon {
+          font-size: 32px;
+          transition: transform 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+          filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
+        }
+
+        .workflow-card:hover .workflow-icon {
+          transform: scale(1.1) rotate(-5deg);
+        }
+
+        .workflow-title {
+          font-family: 'Playfair Display', serif;
+          font-size: 22px;
+          font-weight: 800;
+          color: var(--warm-dark);
+          margin: 0 0 6px 0;
+          letter-spacing: -0.5px;
+          line-height: 1.2;
+        }
+
+        .workflow-description {
+          font-family: 'Source Sans 3', sans-serif;
+          font-size: 14px;
+          color: var(--warm-muted);
+          margin: 0;
+          line-height: 1.5;
+        }
+
+        .workflow-difficulty {
+          font-family: 'Source Sans 3', sans-serif;
+          font-size: 10px;
+          font-weight: 700;
+          text-transform: uppercase;
+          letter-spacing: 1.8px;
+          padding: 6px 14px;
+          border-radius: 100px;
+          background: linear-gradient(135deg, var(--warm-sand), var(--warm-tan));
+          color: var(--warm-brown);
+          box-shadow: inset 0 1px 2px rgba(255,255,255,0.5),
+                      0 2px 4px rgba(139,111,71,0.1);
+        }
+
+        .workflow-expand-icon {
+          font-size: 18px;
+          color: var(--warm-brown);
+          transition: transform 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+          filter: drop-shadow(0 1px 2px rgba(0,0,0,0.1));
+        }
+
+        .workflow-expand-icon.expanded {
+          transform: rotate(180deg);
+        }
+
+        .workflow-content {
+          padding: 32px 28px;
+          background: linear-gradient(135deg,
+            rgba(253,246,238,0.3),
+            rgba(255,255,255,0.5)
+          );
+          animation: slideDown 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        @keyframes slideDown {
+          from {
+            opacity: 0;
+            transform: translateY(-12px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+
+        .workflow-tabs {
+          display: flex;
+          gap: 6px;
+          margin-bottom: 24px;
+          border-bottom: 3px solid var(--warm-tan);
+          padding-bottom: 0;
+          position: relative;
+        }
+
+        .workflow-tab {
+          font-family: 'Source Sans 3', sans-serif;
+          font-size: 13.5px;
+          font-weight: 700;
+          padding: 12px 24px;
+          border: none;
+          background: transparent;
+          color: var(--warm-muted);
+          cursor: pointer;
+          border-radius: 10px 10px 0 0;
+          transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+          position: relative;
+          bottom: -3px;
+          letter-spacing: 0.3px;
+        }
+
+        .workflow-tab:hover {
+          background: linear-gradient(135deg,
+            rgba(245,230,211,0.5),
+            rgba(250,240,228,0.5)
+          );
+          color: var(--warm-dark);
+          transform: translateY(-2px);
+        }
+
+        .workflow-tab.active {
+          color: var(--warm-dark);
+          background: white;
+          border-bottom: 3px solid var(--accent-terracotta);
+          box-shadow: 0 -2px 8px rgba(139,111,71,0.08);
+        }
+
+        .workflow-code-block {
+          background: linear-gradient(135deg, #f8f9fa, #ffffff);
+          border: 2px solid var(--warm-tan);
+          border-radius: 14px;
+          padding: 24px;
+          margin-bottom: 20px;
+          position: relative;
+          box-shadow: inset 0 1px 3px rgba(0,0,0,0.03),
+                      0 2px 8px rgba(139,111,71,0.05);
+        }
+
+        .workflow-code-header {
+          font-family: 'Source Sans 3', sans-serif;
+          font-size: 12.5px;
+          color: var(--warm-brown);
+          margin-bottom: 16px;
+          font-style: italic;
+          font-weight: 500;
+          padding-bottom: 12px;
+          border-bottom: 1px solid rgba(232,213,192,0.4);
+        }
+
+        .workflow-code {
+          font-family: 'IBM Plex Mono', monospace;
+          font-size: 13px;
+          line-height: 1.8;
+          color: #2d3748;
+          white-space: pre-wrap;
+          word-break: break-word;
+          letter-spacing: -0.2px;
+        }
+
+        .workflow-copy-btn {
+          position: absolute;
+          top: 20px;
+          right: 20px;
+          font-family: 'Source Sans 3', sans-serif;
+          font-size: 11.5px;
+          font-weight: 700;
+          padding: 8px 16px;
+          border-radius: 8px;
+          border: 1.5px solid var(--warm-tan);
+          background: white;
+          color: var(--warm-brown);
+          cursor: pointer;
+          transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+          letter-spacing: 0.5px;
+          text-transform: uppercase;
+          box-shadow: 0 2px 4px rgba(139,111,71,0.08);
+        }
+
+        .workflow-copy-btn:hover {
+          background: var(--warm-sand);
+          border-color: var(--warm-brown);
+          transform: translateY(-2px);
+          box-shadow: 0 4px 12px rgba(139,111,71,0.15);
+        }
+
+        .workflow-copy-btn:active {
+          transform: translateY(0);
+        }
+
+        .workflow-copy-btn.copied {
+          background: linear-gradient(135deg, #d1fae5, #a7f3d0);
+          border-color: #34d399;
+          color: #065f46;
+          animation: successPulse 0.5s ease-out;
+        }
+
+        @keyframes successPulse {
+          0%, 100% { transform: scale(1); }
+          50% { transform: scale(1.05); }
+        }
+
+        .workflow-footer {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 24px;
+          padding-top: 20px;
+          border-top: 2px solid var(--warm-tan);
+        }
+
+        .workflow-result,
+        .workflow-tip {
+          padding: 16px;
+          border-radius: 12px;
+          background: white;
+          border: 1.5px solid rgba(232,213,192,0.5);
+          transition: all 0.3s;
+        }
+
+        .workflow-result:hover,
+        .workflow-tip:hover {
+          border-color: var(--warm-tan);
+          box-shadow: 0 4px 12px rgba(139,111,71,0.08);
+          transform: translateY(-2px);
+        }
+
+        .workflow-label {
+          font-family: 'Source Sans 3', sans-serif;
+          font-size: 10.5px;
+          font-weight: 800;
+          text-transform: uppercase;
+          letter-spacing: 2px;
+          color: var(--warm-brown);
+          margin-bottom: 8px;
+          display: flex;
+          align-items: center;
+          gap: 6px;
+        }
+
+        .workflow-label::before {
+          content: '';
+          width: 20px;
+          height: 2px;
+          background: linear-gradient(90deg,
+            var(--accent-terracotta),
+            var(--accent-gold)
+          );
+          border-radius: 2px;
+        }
+
+        .workflow-text {
+          font-family: 'Source Sans 3', sans-serif;
+          font-size: 13.5px;
+          color: var(--warm-text);
+          line-height: 1.7;
+          font-weight: 400;
+        }
+
+        @media (max-width: 768px) {
+          .workflow-header-left {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 12px;
+          }
+
+          .workflow-icon {
+            font-size: 28px;
+          }
+
+          .workflow-tabs {
+            flex-direction: column;
+            gap: 8px;
+            border-bottom: none;
+            padding-bottom: 16px;
+          }
+
+          .workflow-tab {
+            border-radius: 10px;
+            width: 100%;
+            bottom: 0;
+            text-align: left;
+            padding: 14px 20px;
+          }
+
+          .workflow-tab.active {
+            border-bottom: none;
+            border-left: 4px solid var(--accent-terracotta);
+            background: linear-gradient(135deg,
+              var(--warm-sand),
+              var(--warm-cream)
+            );
+          }
+
+          .workflow-footer {
+            grid-template-columns: 1fr;
+            gap: 16px;
+          }
+
+          .workflow-copy-btn {
+            position: static;
+            width: 100%;
+            margin-top: 16px;
+          }
+        }
+
         .footer-bar {
           text-align: center;
           padding: 20px 28px 32px;
