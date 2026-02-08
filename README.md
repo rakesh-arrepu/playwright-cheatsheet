@@ -36,13 +36,11 @@ vercel
 
 ## 📋 What's Inside
 
-- **Navigation** — open, back, forward, reload, close
-- **Interactions** — click, type, hover, drag, select, press
-- **Capture & Snapshot** — snapshot, screenshot, PDF, resize
-- **Tab Management** — list, new, select, close
-- **DevTools & Debug** — console, network, dialog, eval
-- **Testing & Codegen** — codegen, test, debug, UI mode, report
-- **Sessions & Mouse** — CLI-only session and mouse control
+- **50+ Commands** — Navigation, Interactions, Capture, Tabs, DevTools, Testing
+- **3 Complete Workflows** — Real-world examples with step-by-step code
+- **Side-by-Side Comparison** — MCP, CLI, and Test Runner for every command
+- **Interactive Examples** — Expandable workflow cards with copy-to-clipboard
+- **Quick Setup Guide** — Get started in 30 seconds
 
 ## 👤 Author
 
