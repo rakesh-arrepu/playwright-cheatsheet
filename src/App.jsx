@@ -1303,6 +1303,9 @@ export default function PlaywrightWarmCheatsheet() {
           white-space: pre-wrap;
           word-break: break-word;
           letter-spacing: -0.2px;
+          background: ghostwhite;
+          padding: 16px;
+          border-radius: 8px;
         }
 
         .workflow-copy-btn {
